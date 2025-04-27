@@ -22,29 +22,21 @@
             BorderBrush="{StaticResource PrimaryTextBrush}"
             BorderThickness="0,0,0,1"
             Text="{Binding Content}" />
-        <Menu>
-            <MenuItem Header="➕">
-                <Button
-    Margin="5,0,0,0" hc:IconElement.Geometry="{StaticResource DeleteGeometry}"
-    Command="{Binding Source={StaticResource MainViewModel}, Path=DeleteTodoItemCommand}"
-    CommandParameter="{Binding}"
-    Content="删除" />
-                <Button
-    Margin="5,0,0,0" hc:IconElement.Geometry="{StaticResource AddGeometry}"
-    Command="{Binding Source={StaticResource MainViewModel}, Path=AddSubTodoItemCommand}"
-    CommandParameter="{Binding}"
-    Content="添加子待办" />
-            </MenuItem>
-        </Menu>
         <Button
             Margin="5,0,0,0"
-            Command="{Binding Source={StaticResource MainViewModel}, Path=DeleteTodoItemCommand}"
-            CommandParameter="{Binding}"
-            Content="删除" />
-        <Button
-            Margin="5,0,0,0"
+            hc:BorderElement.CornerRadius="10"
+            hc:IconElement.Geometry="{StaticResource AddGeometry}"
             Command="{Binding Source={StaticResource MainViewModel}, Path=AddSubTodoItemCommand}"
             CommandParameter="{Binding}"
-            Content="添加子待办" />
+            Style="{StaticResource ButtonIcon}"
+            ToolTip="添加子节点" />
+        <Button
+            Margin="5,0,0,0"
+            hc:IconElement.Geometry="{StaticResource DeleteFillCircleGeometry}"
+            Command="{Binding Source={StaticResource MainViewModel}, Path=DeleteTodoItemCommand}"
+            CommandParameter="{Binding}"
+            Style="{StaticResource ButtonIcon}"
+            ToolTip="删除当前节点及子节点" />
+
     </StackPanel>
 </UserControl>

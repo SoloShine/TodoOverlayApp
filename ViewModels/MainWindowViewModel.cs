@@ -89,6 +89,18 @@ namespace TodoOverlayApp.ViewModels
             var newApp = new AppAssociation();
             Model.AppAssociations.Add(newApp);
             Model.SelectedApp = newApp;
+            //弹出一个二选一选项
+            var result = MessageBox.Show("是否为当前运行软件添加待办事项？", "选择操作", MessageBoxButton.YesNo);
+            if (result == MessageBoxResult.Yes)
+            {
+                // 执行与当前运行软件相关的逻辑
+                SelectRunningApp(null);
+            }
+            else if (result == MessageBoxResult.No)
+            {
+                // 选择文件路径的逻辑
+                SelectApp(null);
+            }
         }
 
         /// <summary>

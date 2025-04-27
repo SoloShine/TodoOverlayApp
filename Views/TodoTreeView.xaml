@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:TodoOverlayApp.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:TodoOverlayApp.Models"
     xmlns:views="clr-namespace:TodoOverlayApp.Views"
@@ -65,29 +66,23 @@
                             Grid.Column="1"
                             HorizontalAlignment="Right"
                             Orientation="Horizontal">
-                            <Menu>
-                                <MenuItem Header="操作">
-                                    <MenuItem
-                                        Command="{Binding DataContext.SelectRunningAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}"
-                                        Header="选择已打开软件" />
-                                    <MenuItem
-                                        Command="{Binding DataContext.SelectAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}"
-                                        Header="选择软件" />
-                                    <MenuItem
-                                        Command="{Binding DataContext.RemoveAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}"
-                                        Header="删除" />
-                                </MenuItem>
-                            </Menu>
-
                             <Button
                                 Margin="5,0,0,0"
+                                hc:BorderElement.CornerRadius="10"
+                                hc:IconElement.Geometry="{StaticResource AddGeometry}"
                                 Command="{Binding DataContext.AddTodoItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
-                                Content="添加待办"
-                                IsEnabled="{Binding AppName, Converter={StaticResource StringNotEmptyConverter}}" />
+                                IsEnabled="{Binding AppName, Converter={StaticResource StringNotEmptyConverter}}"
+                                Style="{StaticResource ButtonIcon}"
+                                ToolTip="添加待办项" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource DeleteFillCircleGeometry}"
+                                Command="{Binding DataContext.RemoveAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                Style="{StaticResource ButtonIcon}"
+                                ToolTip="删除软件及所有待办项" />
+
+
                         </StackPanel>
                     </Grid>
                 </Border>
