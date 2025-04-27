@@ -6,12 +6,37 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:TodoOverlayApp.ViewModels"
+    xmlns:models="clr-namespace:TodoOverlayApp.Models"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Background="Transparent"
     mc:Ignorable="d">
     <UserControl.Resources>
         <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
+        <!-- 递归模板 - 用于任意层级待办项 -->
+        <HierarchicalDataTemplate x:Key="TodoItemTemplate" 
+                          DataType="{x:Type models:TodoItem}"
+                          ItemsSource="{Binding SubItems}">
+            <StackPanel Orientation="Horizontal">
+                <CheckBox VerticalAlignment="Center" IsChecked="{Binding IsCompleted}" />
+                <TextBox
+             Width="150"
+             Margin="5,0,0,0"
+             BorderBrush="{StaticResource PrimaryTextBrush}"
+             BorderThickness="0,0,0,1"
+             Text="{Binding Content}" />
+                <Button
+             Margin="5,0,0,0"
+             Command="{Binding DataContext.DeleteTodoItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+             CommandParameter="{Binding}"
+             Content="删除" />
+                <Button
+             Margin="5,0,0,0"
+             Command="{Binding DataContext.AddSubTodoItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+             CommandParameter="{Binding}"
+             Content="添加子待办" />
+            </StackPanel>
+        </HierarchicalDataTemplate>
     </UserControl.Resources>
     <TreeView
         Margin="10"
@@ -83,25 +108,9 @@
                     </Grid>
                 </Border>
                 <!--  二级节点  -->
+                <!-- 第一级待办项 - 使用递归模板 -->
                 <HierarchicalDataTemplate.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <StackPanel Orientation="Horizontal">
-                                <CheckBox VerticalAlignment="Center" IsChecked="{Binding IsCompleted}" />
-                                <TextBox
-                                    Width="150"
-                                    Margin="5,0,0,0"
-                                    BorderBrush="{StaticResource PrimaryTextBrush}"
-                                    BorderThickness="0,0,0,1"
-                                    Text="{Binding Content}" />
-                                <Button
-                                    Margin="5,0,0,0"
-                                    Command="{Binding DataContext.DeleteTodoItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}"
-                                    Content="删除" />
-                            </StackPanel>
-                        </StackPanel>
-                    </DataTemplate>
+                    <StaticResource ResourceKey="TodoItemTemplate" />
                 </HierarchicalDataTemplate.ItemTemplate>
             </HierarchicalDataTemplate>
         </TreeView.ItemTemplate>

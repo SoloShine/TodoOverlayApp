@@ -1,4 +1,5 @@
 
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 
 namespace TodoOverlayApp.Models
@@ -39,6 +40,20 @@ namespace TodoOverlayApp.Models
             {
                 isExpanded = value;
                 OnPropertyChanged(nameof(IsExpanded));
+            }
+        }
+
+        private ObservableCollection<TodoItem>? _subItems = [];
+        /// <summary>
+        /// 子待办项集合
+        /// </summary>
+        public ObservableCollection<TodoItem>? SubItems
+        {
+            get => _subItems;
+            set
+            {
+                _subItems = value;
+                OnPropertyChanged(nameof(SubItems));
             }
         }
 

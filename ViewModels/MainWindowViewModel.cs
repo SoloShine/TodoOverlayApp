@@ -50,6 +50,9 @@ namespace TodoOverlayApp.ViewModels
         public ICommand AddTodoItemCommand { get; }
         public ICommand DeleteTodoItemCommand { get; }
 
+        public ICommand AddSubTodoItemCommand { get; }
+        public ICommand DeleteSubTodoItemCommand { get; }
+
         public MainWindowViewModel()
         {
             AddAppCommand = new RelayCommand(AddApp);
@@ -60,6 +63,9 @@ namespace TodoOverlayApp.ViewModels
             ForceLaunchCommand = new RelayCommand(ForceLaunch);
             AddTodoItemCommand = new RelayCommand(AddTodoItem);
             DeleteTodoItemCommand = new RelayCommand(DeleteTodoItem);
+            AddSubTodoItemCommand = new RelayCommand(AddSubTodoItem);
+            DeleteSubTodoItemCommand = new RelayCommand(DeleteTodoItem); // 复用现有的删除方法
+
         }
 
         /// <summary>
@@ -265,16 +271,70 @@ namespace TodoOverlayApp.ViewModels
             }
         }
 
+        // 添加新的方法来处理子待办项
         /// <summary>
-        /// 删除当前选中软件关联的待办项
+        /// 为待办项添加子待办项
         /// </summary>
-        /// <param name="parameter"></param>
+        /// <param name="parameter">父待办项</param>
+        private void AddSubTodoItem(object? parameter)
+        {
+            if (parameter is TodoItem parentItem)
+            {
+                parentItem?.SubItems.Add(new TodoItem { Content = "新子待办项", IsCompleted = false });
+                parentItem.IsExpanded = true;
+            }
+        }
+
+
+        /// <summary>
+        /// 删除待办项（支持任意层级）
+        /// </summary>
+        /// <param name="parameter">要删除的待办项</param>
         private void DeleteTodoItem(object? parameter)
         {
-            if (parameter is TodoItem item && Model.SelectedApp != null)
+            if (parameter is TodoItem item)
             {
-                Model.SelectedApp.TodoItems.Remove(item);
+                //弹出确认框
+                var result = MessageBox.Show("确定要删除此待办项吗？", "确认删除", MessageBoxButton.YesNo);
+                if (result != MessageBoxResult.Yes) return;
+                // 先检查是否为一级待办项
+                if (Model.SelectedApp != null && Model.SelectedApp.TodoItems.Contains(item))
+                {
+                    Model.SelectedApp.TodoItems.Remove(item);
+                    return;
+                }
+
+                // 递归搜索并删除子待办项
+                foreach (var app in Model.AppAssociations)
+                {
+                    if (RemoveItemRecursively(app.TodoItems, item))
+                        return;
+                }
             }
+        }
+        /// <summary>
+        /// 递归搜索并删除待办项
+        /// </summary>
+        /// <param name="items">待办项集合</param>
+        /// <param name="itemToRemove">要删除的待办项</param>
+        /// <returns>是否成功删除</returns>
+        private bool RemoveItemRecursively(ObservableCollection<TodoItem> items, TodoItem itemToRemove)
+        {
+            // 直接检查当前集合
+            if (items.Contains(itemToRemove))
+            {
+                items.Remove(itemToRemove);
+                return true;
+            }
+
+            // 递归检查每个子项的集合
+            foreach (var item in items)
+            {
+                if (RemoveItemRecursively(item.SubItems, itemToRemove))
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -288,8 +348,5 @@ namespace TodoOverlayApp.ViewModels
             }
             _overlayWindows.Clear();
         }
-
-
-
     }
 }
