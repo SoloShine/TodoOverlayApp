@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Microsoft.Win32;
 using TodoOverlayApp.Models;
 using TodoOverlayApp.Views;
@@ -232,8 +233,41 @@ namespace TodoOverlayApp.ViewModels
         {
             if (Utils.NativeMethods.GetWindowRect(targetWindowHandle, out var rect))
             {
-                overlayWindow.Left = rect.Left;
-                overlayWindow.Top = rect.Bottom - overlayWindow.Height;
+                // 获取 DPI 缩放因子
+                var source = PresentationSource.FromVisual(overlayWindow);
+                if (source?.CompositionTarget != null)
+                {
+                    // 获取 DPI 转换矩阵
+                    Matrix transformMatrix = source.CompositionTarget.TransformFromDevice;
+
+                    // 使用 DPI 转换矩阵转换坐标
+                    double dpiScaledLeft = rect.Left * transformMatrix.M11;
+                    double dpiScaledTop = rect.Bottom * transformMatrix.M22;
+
+                    // 调整悬浮窗位置，确保它不会超出屏幕边界
+                    double adjustedLeft = Math.Max(0, dpiScaledLeft);
+                    double adjustedTop = Math.Max(0, dpiScaledTop - overlayWindow.ActualHeight);
+
+                    Debug.WriteLine($"原始位置: Left={rect.Left}, Bottom={rect.Bottom}");
+                    Debug.WriteLine($"DPI缩放后: Left={dpiScaledLeft}, Top={dpiScaledTop}");
+                    Debug.WriteLine($"最终位置: Left={adjustedLeft}, Top={adjustedTop}");
+
+                    // 设置悬浮窗的位置
+                    double offsetX = 0; // 水平偏移量
+                    double offsetY = 0; // 垂直偏移量，给一个小间距
+                    overlayWindow.Left = adjustedLeft + offsetX;
+                    overlayWindow.Top = adjustedTop + offsetY;
+
+                    // 可选：调整悬浮窗大小以匹配目标窗口宽度
+                    //double targetWidth = (rect.Right - rect.Left) * transformMatrix.M11;
+                    //overlayWindow.Width = targetWidth;
+                }
+                else
+                {
+                    // 回退方案，当无法获取 DPI 信息时
+                    overlayWindow.Left = rect.Left;
+                    overlayWindow.Top = rect.Bottom - overlayWindow.ActualHeight;
+                }
             }
         }
 
