@@ -1,10 +1,10 @@
 using System.Windows;
 
-namespace TodoOverlayApp
+namespace TodoOverlayApp.Views
 {
     public partial class EditWindow : Window
     {
-        public string NewContent { get; set; }
+        public string NewContent { get; set; } = string.Empty;
 
         public EditWindow(string initialContent)
         {
