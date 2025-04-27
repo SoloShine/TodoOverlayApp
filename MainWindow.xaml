@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:vm="clr-namespace:TodoOverlayApp.ViewModels"
+    xmlns:views="clr-namespace:TodoOverlayApp.Views"
     Title="待办软件配置"
     Width="800"
     Height="450"
@@ -17,77 +18,8 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="150" />
         </Grid.ColumnDefinitions>
-        <TreeView Margin="10" ItemsSource="{Binding Model.AppAssociations}">
-            <TreeView.ItemContainerStyle>
-                <Style TargetType="TreeViewItem">
-                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
-                </Style>
-            </TreeView.ItemContainerStyle>
-            <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding TodoItems}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="150" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            MaxWidth="400"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Text="{Binding AppName}"
-                            ToolTip="{Binding AppPath}" />
-                        <StackPanel
-                            Grid.Column="1"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal">
-                            <Menu>
-                                <MenuItem Header="操作">
-                                    <MenuItem
-                                        Command="{Binding DataContext.SelectRunningAppCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding}"
-                                        Header="选择已打开软件" />
-                                    <MenuItem
-                                        Command="{Binding DataContext.SelectAppCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding}"
-                                        Header="选择软件" />
-                                    <MenuItem
-                                        Command="{Binding DataContext.RemoveAppCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding}"
-                                        Header="删除" />
-
-                                </MenuItem>
-                            </Menu>
-
-                            <Button
-                                Margin="5,0,0,0"
-                                Command="{Binding DataContext.AddTodoItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                CommandParameter="{Binding}"
-                                Content="添加待办" />
-                        </StackPanel>
-                    </Grid>
-                    <!--  二级节点  -->
-                    <HierarchicalDataTemplate.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <StackPanel Orientation="Horizontal">
-                                    <CheckBox VerticalAlignment="Center" IsChecked="{Binding IsCompleted}" />
-                                    <TextBox
-                                        Width="150"
-                                        Margin="5,0,0,0"
-                                        Text="{Binding Content}" />
-                                    <Button
-                                        Margin="5,0,0,0"
-                                        Command="{Binding DataContext.DeleteTodoItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding}"
-                                        Content="删除" />
-                                </StackPanel>
-                            </StackPanel>
-                        </DataTemplate>
-                    </HierarchicalDataTemplate.ItemTemplate>
-                </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>
-        </TreeView>
-
+        <!-- 使用新的UserControl替换之前的TreeView -->
+        <views:TodoTreeView />
         <StackPanel Grid.Column="1">
             <Button
                 Margin="10"
