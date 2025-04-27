@@ -208,7 +208,8 @@ namespace TodoOverlayApp.ViewModels
             {
                 var overlayWindow = new OverlayWindow(Model.SelectedApp.TodoItems)
                 {
-                    Topmost = true
+                    Topmost = true,
+                    DataContext = this
                 };
 
                 var timer = new System.Windows.Threading.DispatcherTimer
