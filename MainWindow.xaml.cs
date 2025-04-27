@@ -49,7 +49,6 @@ namespace TodoOverlayApp
     public partial class MainWindow : Window
     {
         private string _targetAppPath;
-        private string _todoContent;
         // 新增字典用于存储每个关联软件对应的待办事项窗口
         private Dictionary<string, OverlayWindow> _overlayWindows = new Dictionary<string, OverlayWindow>();
 
