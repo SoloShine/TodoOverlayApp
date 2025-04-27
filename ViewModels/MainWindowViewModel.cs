@@ -278,9 +278,9 @@ namespace TodoOverlayApp.ViewModels
         /// <param name="parameter">父待办项</param>
         private void AddSubTodoItem(object? parameter)
         {
-            if (parameter is TodoItem parentItem)
+            if (parameter is TodoItem parentItem && parentItem!=null)
             {
-                parentItem?.SubItems.Add(new TodoItem { Content = "新子待办项", IsCompleted = false });
+                parentItem.SubItems?.Add(new TodoItem { Content = "新子待办项", IsCompleted = false });
                 parentItem.IsExpanded = true;
             }
         }
@@ -318,10 +318,11 @@ namespace TodoOverlayApp.ViewModels
         /// <param name="items">待办项集合</param>
         /// <param name="itemToRemove">要删除的待办项</param>
         /// <returns>是否成功删除</returns>
-        private bool RemoveItemRecursively(ObservableCollection<TodoItem> items, TodoItem itemToRemove)
+        private static bool RemoveItemRecursively(ObservableCollection<TodoItem> items, TodoItem itemToRemove)
         {
-            // 直接检查当前集合
-            if (items.Contains(itemToRemove))
+            // 直接检查当前集合，传递判断量以避免警告问题
+            var isContains = items.Contains(itemToRemove);
+            if (isContains)
             {
                 items.Remove(itemToRemove);
                 return true;
