@@ -54,7 +54,7 @@
                         </Grid.ColumnDefinitions>
                         <Border BorderBrush="{StaticResource PrimaryTextBrush}" BorderThickness="0,0,0,1">
                             <TextBox
-                                MinWidth="300"
+                                MinWidth="150"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 IsReadOnly="True"

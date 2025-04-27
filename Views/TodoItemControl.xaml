@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:TodoOverlayApp.Models"
     xmlns:vm="clr-namespace:TodoOverlayApp.ViewModels"
@@ -10,21 +11,39 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
     <StackPanel Orientation="Horizontal">
-        <CheckBox VerticalAlignment="Center" IsChecked="{Binding IsCompleted}" />
+        <CheckBox
+            VerticalAlignment="Center"
+            BorderBrush="Black"
+            BorderThickness="1"
+            IsChecked="{Binding IsCompleted}" />
         <TextBox
             Width="150"
             Margin="5,0,0,0"
             BorderBrush="{StaticResource PrimaryTextBrush}"
             BorderThickness="0,0,0,1"
             Text="{Binding Content}" />
+        <Menu>
+            <MenuItem Header="➕">
+                <Button
+    Margin="5,0,0,0" hc:IconElement.Geometry="{StaticResource DeleteGeometry}"
+    Command="{Binding Source={StaticResource MainViewModel}, Path=DeleteTodoItemCommand}"
+    CommandParameter="{Binding}"
+    Content="删除" />
+                <Button
+    Margin="5,0,0,0" hc:IconElement.Geometry="{StaticResource AddGeometry}"
+    Command="{Binding Source={StaticResource MainViewModel}, Path=AddSubTodoItemCommand}"
+    CommandParameter="{Binding}"
+    Content="添加子待办" />
+            </MenuItem>
+        </Menu>
         <Button
             Margin="5,0,0,0"
-            Command="{Binding DataContext.DeleteTodoItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+            Command="{Binding Source={StaticResource MainViewModel}, Path=DeleteTodoItemCommand}"
             CommandParameter="{Binding}"
             Content="删除" />
         <Button
             Margin="5,0,0,0"
-            Command="{Binding DataContext.AddSubTodoItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+            Command="{Binding Source={StaticResource MainViewModel}, Path=AddSubTodoItemCommand}"
             CommandParameter="{Binding}"
             Content="添加子待办" />
     </StackPanel>

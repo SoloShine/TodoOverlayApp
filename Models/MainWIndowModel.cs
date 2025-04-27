@@ -78,7 +78,6 @@ namespace TodoOverlayApp.Models
                 Debug.WriteLine($"保存配置失败: {ex.Message}");
             }
         }
-
         public static MainWIndowModel? LoadFromFile()
         {
             try
@@ -86,14 +85,56 @@ namespace TodoOverlayApp.Models
                 if (File.Exists(ConfigPath))
                 {
                     var json = File.ReadAllText(ConfigPath);
-                    return JsonSerializer.Deserialize<MainWIndowModel>(json, CachedJsonSerializerOptions);
+                    var options = new JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        PropertyNameCaseInsensitive = true,
+                        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve
+                    };
+
+                    var result = JsonSerializer.Deserialize<MainWIndowModel>(json, options);
+                    if (result != null)
+                    {
+                        Debug.WriteLine($"从文件加载成功：{result.AppAssociations.Count} 个应用关联");
+
+                        // 特殊处理 - 确保所有子集合都被初始化
+                        foreach (var app in result.AppAssociations)
+                        {
+                            if (app.TodoItems == null)
+                                app.TodoItems = new ObservableCollection<TodoItem>();
+
+                            foreach (var item in app.TodoItems)
+                            {
+                                if (item.SubItems == null)
+                                    item.SubItems = new ObservableCollection<TodoItem>();
+
+                                // 递归确保所有子项的SubItems不为空
+                                EnsureSubItemsInitialized(item);
+                            }
+                        }
+
+                        return result;
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"加载配置失败: {ex.Message}");
+                Debug.WriteLine($"异常详情: {ex}");
             }
-            return new();
+
+            return new MainWIndowModel();
+        }
+
+        private static void EnsureSubItemsInitialized(TodoItem item)
+        {
+            if (item.SubItems == null)
+                item.SubItems = new ObservableCollection<TodoItem>();
+
+            foreach (var subItem in item.SubItems)
+            {
+                EnsureSubItemsInitialized(subItem);
+            }
         }
         #endregion
 

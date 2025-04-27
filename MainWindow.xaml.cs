@@ -9,7 +9,7 @@ namespace TodoOverlayApp
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel();
+            DataContext = App.MainViewModel;
             Closed += MainWindow_Closed;
         }
 

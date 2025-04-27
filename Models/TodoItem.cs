@@ -6,6 +6,14 @@ namespace TodoOverlayApp.Models
 {
     public class TodoItem : INotifyPropertyChanged
     {
+        public TodoItem()
+        {
+            // 确保每个TodoItem都有唯一ID
+            Id = Guid.NewGuid().ToString();
+        }
+        // 唯一标识符
+        public string Id { get; set; }
+
         private string _content = "";
         private bool _isCompleted;
 
