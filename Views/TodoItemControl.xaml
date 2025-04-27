@@ -1,0 +1,31 @@
+﻿<UserControl
+    x:Class="TodoOverlayApp.Views.TodoItemControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:TodoOverlayApp.Models"
+    xmlns:vm="clr-namespace:TodoOverlayApp.ViewModels"
+    d:DesignHeight="50"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+    <StackPanel Orientation="Horizontal">
+        <CheckBox VerticalAlignment="Center" IsChecked="{Binding IsCompleted}" />
+        <TextBox
+            Width="150"
+            Margin="5,0,0,0"
+            BorderBrush="{StaticResource PrimaryTextBrush}"
+            BorderThickness="0,0,0,1"
+            Text="{Binding Content}" />
+        <Button
+            Margin="5,0,0,0"
+            Command="{Binding DataContext.DeleteTodoItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+            CommandParameter="{Binding}"
+            Content="删除" />
+        <Button
+            Margin="5,0,0,0"
+            Command="{Binding DataContext.AddSubTodoItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+            CommandParameter="{Binding}"
+            Content="添加子待办" />
+    </StackPanel>
+</UserControl>
