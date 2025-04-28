@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using HandyControl.Tools;
 using Microsoft.Win32;
 using TodoOverlayApp.Models;
@@ -57,6 +58,7 @@ namespace TodoOverlayApp.ViewModels
 
         public ICommand ToggleIsInjectedCommand { get; }
 
+        private DispatcherTimer autoInjectTimer;
         public MainWindowViewModel()
         {
             // 尝试从文件加载配置，如果加载失败则创建新的模型
@@ -80,10 +82,14 @@ namespace TodoOverlayApp.ViewModels
             AddSubTodoItemCommand = new RelayCommand(AddSubTodoItem);
             DeleteSubTodoItemCommand = new RelayCommand(DeleteTodoItem); // 复用现有的删除方法
             ToggleIsInjectedCommand = new RelayCommand(ToggleIsInjected);
-
+            //周期遍历model中AppAssociations，当AppAssociation中IsInjected为true的时候，尝试自动创建OverlayWindow
+            autoInjectTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            autoInjectTimer.Tick += AutoInjectOverlays;
+            autoInjectTimer.Start();
         }
-
-
 
         /// <summary>
         /// 添加一个应用。将新应用的路径设置为选中状态的AppPath，并将其加入到集合中。
@@ -252,6 +258,99 @@ namespace TodoOverlayApp.ViewModels
         }
 
         /// <summary>
+        /// 自动注入悬浮窗到当前前台窗口
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AutoInjectOverlays(object? sender, EventArgs e)
+        {
+            // 获取当前前台窗口句柄
+            IntPtr foregroundHandle = Utils.NativeMethods.GetForegroundWindow();
+
+            foreach (var app in Model.AppAssociations)
+            {
+                if (!app.IsInjected)
+                    continue;
+
+                if (string.IsNullOrEmpty(app.AppPath) || !File.Exists(app.AppPath))
+                    continue;
+
+                string processName = Path.GetFileNameWithoutExtension(app.AppPath);
+                var processes = Process.GetProcessesByName(processName);
+                if (processes.Length == 0)
+                {
+                    // 如果进程未运行且之前已经创建了 overlay，则关闭它
+                    if (_overlayWindows.ContainsKey(app.AppPath))
+                    {
+                        _overlayWindows[app.AppPath].Close();
+                        _overlayWindows.Remove(app.AppPath);
+                    }
+                    continue;
+                }
+
+                Process targetProcess = processes[0];
+                IntPtr targetWindowHandle = targetProcess.MainWindowHandle;
+                if (!Utils.NativeMethods.IsWindow(targetWindowHandle))
+                    continue;
+
+                // 若目标窗口为前台且尚未创建 overlay，则创建 overlay
+                if (foregroundHandle == targetWindowHandle)
+                {
+                    if (!_overlayWindows.ContainsKey(app.AppPath))
+                    {
+                        Debug.WriteLine("窗口需要创建");
+                        var overlayWindow = new OverlayWindow(app.TodoItems)
+                        {
+                            Topmost = false
+                        };
+                        overlayWindow.ApplyOverlaySettings();
+                        overlayWindow.Show();
+
+                        // 建立父子关系（使 overlay 显示在目标窗口上方）
+                        _ = Utils.NativeMethods.SetWindowLong(
+                            overlayWindow.GetHandle(),
+                            Utils.NativeMethods.GWL_HWNDPARENT,
+                            targetWindowHandle.ToInt32());
+
+                        // 定时器持续更新 overlay 的位置
+                        var timer = new DispatcherTimer
+                        {
+                            Interval = TimeSpan.FromMilliseconds(100)
+                        };
+                        timer.Tick += (s, args) =>
+                        {
+                            UpdateOverlayPosition(overlayWindow, targetWindowHandle);
+                            // 获取目标窗口上方的窗口句柄
+                            IntPtr hAbove = Utils.NativeMethods.GetWindow(targetWindowHandle, Utils.NativeMethods.GW_HWNDPREV);
+                            if (hAbove == IntPtr.Zero)
+                                hAbove = targetWindowHandle;
+                            Utils.NativeMethods.SetWindowPos(
+                                overlayWindow.GetHandle(),
+                                hAbove,
+                                0, 0, 0, 0,
+                                Utils.NativeMethods.SWP_NOMOVE | Utils.NativeMethods.SWP_NOSIZE | Utils.NativeMethods.SWP_NOACTIVATE);
+                        };
+                        timer.Start();
+                        overlayWindow.Closed += (s, args) => timer.Stop();
+
+                        _overlayWindows[app.AppPath] = overlayWindow;
+                    }
+                }
+                else
+                {
+                    // 如果目标不在前台，且已存在 overlay，则关闭 overlay
+                    //if (_overlayWindows.ContainsKey(app.AppPath))
+                    //{
+                    //    Debug.WriteLine("窗口需要删除");
+                    //    _overlayWindows[app.AppPath].Close();
+                    //    _overlayWindows.Remove(app.AppPath);
+                    //}
+                }
+            }
+        }
+
+
+        /// <summary>
         /// 切换软件待办项的注入状态
         /// </summary>
         /// <param name="parameter"></param>
@@ -301,7 +400,7 @@ namespace TodoOverlayApp.ViewModels
                         overlayWindow.Show();
 
                         // 设置悬浮窗为目标窗口的子窗口（在Z-order中）
-                        Utils.NativeMethods.SetWindowLong(
+                        _ = Utils.NativeMethods.SetWindowLong(
                             overlayWindow.GetHandle(),
                             Utils.NativeMethods.GWL_HWNDPARENT,
                             targetWindowHandle.ToInt32());
@@ -673,8 +772,13 @@ namespace TodoOverlayApp.ViewModels
             }
         }
 
-        // 使用ID匹配的查找和删除方法
-        private bool FindAndRemoveItemById(ObservableCollection<TodoItem> items, string itemId)
+        /// <summary>
+        /// 使用ID匹配的查找和删除方法
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="itemId"></param>
+        /// <returns></returns>
+        private static bool FindAndRemoveItemById(ObservableCollection<TodoItem> items, string itemId)
         {
             // 先检查当前级别
             var directMatch = items.FirstOrDefault(t => t.Id == itemId);
@@ -700,62 +804,6 @@ namespace TodoOverlayApp.ViewModels
         }
 
         /// <summary>
-        /// 在待办项集合中搜索并删除指定待办项
-        /// </summary>
-        private bool SearchAndRemoveInTodoItems(ObservableCollection<TodoItem> items, TodoItem itemToRemove)
-        {
-            // 直接检查当前集合
-            if (items.Contains(itemToRemove))
-            {
-                items.Remove(itemToRemove);
-                return true;
-            }
-
-            // 递归检查每个子项集合
-            foreach (var item in items.ToList()) // 使用 ToList() 避免集合修改异常
-            {
-                if (item.SubItems != null && RemoveItemRecursively(item.SubItems, itemToRemove))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// 递归搜索并删除待办项
-        /// </summary>
-        private static bool RemoveItemRecursively(ObservableCollection<TodoItem> items, TodoItem itemToRemove)
-        {
-            // 检查参数
-            if (items == null || itemToRemove == null)
-            {
-                Debug.WriteLine("items 或 itemToRemove 为 null");
-                return false;
-            }
-
-            // 直接检查当前集合
-            var isContains = items.Contains(itemToRemove);
-            if (isContains)
-            {
-                items.Remove(itemToRemove);
-                return true;
-            }
-
-            // 递归检查每个子项的集合
-            foreach (var item in items.ToList()) // 使用 ToList() 避免集合修改异常
-            {
-                if (item.SubItems != null && RemoveItemRecursively(item.SubItems, itemToRemove))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// 清理所有关联的悬浮窗和定时器
         /// </summary>
         public void Cleanup()
@@ -764,7 +812,9 @@ namespace TodoOverlayApp.ViewModels
             {
                 window.Close();
             }
+            Model.SaveToFileAsync().ConfigureAwait(false);
             _overlayWindows.Clear();
+            autoInjectTimer.Stop();
         }
     }
 }

@@ -84,6 +84,9 @@ namespace TodoOverlayApp.Utils
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
 
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
 
         // GetWindow √¸¡Ó
         public const uint GW_OWNER = 4;
