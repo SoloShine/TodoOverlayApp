@@ -55,6 +55,8 @@ namespace TodoOverlayApp.ViewModels
         public ICommand AddSubTodoItemCommand { get; }
         public ICommand DeleteSubTodoItemCommand { get; }
 
+        public ICommand ToggleIsInjectedCommand { get; }
+
         public MainWindowViewModel()
         {
             // 尝试从文件加载配置，如果加载失败则创建新的模型
@@ -78,8 +80,11 @@ namespace TodoOverlayApp.ViewModels
             DeleteTodoItemCommand = new RelayCommand(DeleteTodoItem);
             AddSubTodoItemCommand = new RelayCommand(AddSubTodoItem);
             DeleteSubTodoItemCommand = new RelayCommand(DeleteTodoItem); // 复用现有的删除方法
+            ToggleIsInjectedCommand = new RelayCommand(ToggleIsInjected);
 
         }
+
+
 
         /// <summary>
         /// 添加一个应用。将新应用的路径设置为选中状态的AppPath，并将其加入到集合中。
@@ -89,7 +94,6 @@ namespace TodoOverlayApp.ViewModels
         {
             var newApp = new AppAssociation();
             Model.AppAssociations.Add(newApp);
-            Model.SelectedApp = newApp;
             //弹出一个二选一选项
             var result = MessageBox.Show("是否为当前运行软件添加待办事项？", "选择操作", MessageBoxButton.YesNo);
             if (result == MessageBoxResult.Yes)
@@ -113,10 +117,6 @@ namespace TodoOverlayApp.ViewModels
             if (parameter is AppAssociation app)
             {
                 Model.AppAssociations.Remove(app);
-                if (Model.SelectedApp == app)
-                {
-                    Model.SelectedApp = Model.AppAssociations.FirstOrDefault();
-                }
             }
         }
 
@@ -201,13 +201,14 @@ namespace TodoOverlayApp.ViewModels
 
             void ChooseFunc()
             {
-                if (listBox.SelectedIndex != -1 && Model.SelectedApp != null)
+                if (listBox.SelectedIndex != -1)
                 {
                     var process = processes[listBox.SelectedIndex];
                     try
                     {
-                        Model.SelectedApp.AppPath = process.MainModule?.FileName;
-                        Model.SelectedApp.AppName = process.MainModule?.ModuleName;
+                        //默认最后一个节点为操作节点
+                        Model.AppAssociations.Last().AppPath = process.MainModule?.FileName;
+                        Model.AppAssociations.Last().AppName = process.MainModule?.ModuleName;
                     }
                     catch (Exception ex)
                     {
@@ -252,50 +253,117 @@ namespace TodoOverlayApp.ViewModels
         }
 
         /// <summary>
+        /// 切换软件待办项的注入状态
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void ToggleIsInjected(object? parameter)
+        {
+            if (parameter is AppAssociation app)
+            {
+                if (!File.Exists(app.AppPath))
+                {
+                    MessageBox.Show("关联软件未安装，请检查路径。");
+                    return;
+                }
+
+                var processName = Path.GetFileNameWithoutExtension(app.AppPath);
+                var targetProcesses = Process.GetProcessesByName(processName);
+                if (targetProcesses.Length == 0) return;
+
+                var targetProcess = targetProcesses[0];
+                var targetWindowHandle = targetProcess.MainWindowHandle;
+
+                if (!Utils.NativeMethods.IsWindow(targetWindowHandle))
+                {
+                    MessageBox.Show("无法获取有效的窗口句柄。");
+                    return;
+                }
+
+                var appKey = app.AppPath;
+                //由于绑定了属性，这里已经发生了变化，所以需要反着判定
+                if (app.IsInjected)
+                {
+                    // 启动悬浮窗
+                    if (!_overlayWindows.ContainsKey(appKey))
+                    {
+                        var overlayWindow = new OverlayWindow(app.TodoItems)
+                        {
+                            Topmost = true
+                        };
+
+                        var timer = new System.Windows.Threading.DispatcherTimer
+                        {
+                            Interval = TimeSpan.FromMilliseconds(100)
+                        };
+                        timer.Tick += (s, e) => UpdateOverlayPosition(overlayWindow, targetWindowHandle);
+                        timer.Start();
+
+                        overlayWindow.Closed += (s, e) => timer.Stop();
+                        overlayWindow.Show();
+                        _overlayWindows[appKey] = overlayWindow;
+                    }
+                    
+                }
+                else
+                {
+                    // 关闭悬浮窗
+                    if (_overlayWindows.ContainsKey(app.AppPath))
+                    {
+                        _overlayWindows[app.AppPath].Close();
+                        _overlayWindows.Remove(app.AppPath);
+                    }
+                }
+            }
+                
+
+        }
+
+        /// <summary>
         /// 保存配置并启动悬浮窗
         /// </summary>
         /// <param name="parameter"></param>
         private void SaveConfig(object? parameter)
         {
-            if (Model.SelectedApp == null || string.IsNullOrEmpty(Model.SelectedApp.AppPath)) return;
-            if (!File.Exists(Model.SelectedApp.AppPath))
-            {
-                MessageBox.Show("关联软件未安装，请检查路径。");
-                return;
-            }
+            //if (Model.SelectedApp == null || string.IsNullOrEmpty(Model.SelectedApp.AppPath)) return;
+            //if (!File.Exists(Model.SelectedApp.AppPath))
+            //{
+            //    MessageBox.Show("关联软件未安装，请检查路径。");
+            //    return;
+            //}
 
-            var processName = Path.GetFileNameWithoutExtension(Model.SelectedApp.AppPath);
-            var targetProcesses = Process.GetProcessesByName(processName);
-            if (targetProcesses.Length == 0) return;
+            //var processName = Path.GetFileNameWithoutExtension(Model.SelectedApp.AppPath);
+            //var targetProcesses = Process.GetProcessesByName(processName);
+            //if (targetProcesses.Length == 0) return;
 
-            var targetProcess = targetProcesses[0];
-            var targetWindowHandle = targetProcess.MainWindowHandle;
+            //var targetProcess = targetProcesses[0];
+            //var targetWindowHandle = targetProcess.MainWindowHandle;
             
-            if (!Utils.NativeMethods.IsWindow(targetWindowHandle))
-            {
-                MessageBox.Show("无法获取有效的窗口句柄。");
-                return;
-            }
+            //if (!Utils.NativeMethods.IsWindow(targetWindowHandle))
+            //{
+            //    MessageBox.Show("无法获取有效的窗口句柄。");
+            //    return;
+            //}
 
-            var appKey = Model.SelectedApp.AppPath;
-            if (!_overlayWindows.ContainsKey(appKey))
-            {
-                var overlayWindow = new OverlayWindow(Model.SelectedApp.TodoItems)
-                {
-                    Topmost = true
-                };
+            //var appKey = Model.SelectedApp.AppPath;
+            //if (!_overlayWindows.ContainsKey(appKey))
+            //{
+            //    var overlayWindow = new OverlayWindow(Model.SelectedApp.TodoItems)
+            //    {
+            //        Topmost = true
+            //    };
 
-                var timer = new System.Windows.Threading.DispatcherTimer
-                {
-                    Interval = TimeSpan.FromMilliseconds(100)
-                };
-                timer.Tick += (s, e) => UpdateOverlayPosition(overlayWindow, targetWindowHandle);
-                timer.Start();
+            //    var timer = new System.Windows.Threading.DispatcherTimer
+            //    {
+            //        Interval = TimeSpan.FromMilliseconds(100)
+            //    };
+            //    timer.Tick += (s, e) => UpdateOverlayPosition(overlayWindow, targetWindowHandle);
+            //    timer.Start();
 
-                overlayWindow.Closed += (s, e) => timer.Stop();
-                overlayWindow.Show();
-                _overlayWindows[appKey] = overlayWindow;
-            }
+            //    overlayWindow.Closed += (s, e) => timer.Stop();
+            //    overlayWindow.Show();
+            //    _overlayWindows[appKey] = overlayWindow;
+            //}
         }
 
         /// <summary>
@@ -545,13 +613,8 @@ namespace TodoOverlayApp.ViewModels
         {
             if (parameter is AppAssociation app)
             {
-                app.TodoItems.Add(new TodoItem { Content = "新待办项", IsCompleted = false });
+                app.TodoItems.Add(new TodoItem { Content = "新待办项", IsCompleted = false, ParentId=app.Id });
                 app.IsExpanded = true;
-            }
-            else if (Model.SelectedApp != null)
-            {
-                Model.SelectedApp.TodoItems.Add(new TodoItem { Content = "新待办项", IsCompleted = false });
-                Model.SelectedApp.IsExpanded = true;
             }
             Model.SaveToFileAsync().ConfigureAwait(false);
         }
@@ -565,7 +628,7 @@ namespace TodoOverlayApp.ViewModels
         {
             if (parameter is TodoItem parentItem && parentItem!=null)
             {
-                parentItem.SubItems?.Add(new TodoItem { Content = "新子待办项", IsCompleted = false });
+                parentItem.SubItems?.Add(new TodoItem { Content = "新子待办项", IsCompleted = false, ParentId = parentItem.Id });
                 parentItem.IsExpanded = true;
                 Model.SaveToFileAsync().ConfigureAwait(false);
             }
@@ -579,34 +642,28 @@ namespace TodoOverlayApp.ViewModels
         {
             if (parameter is TodoItem item)
             {
-                // 添加更详细的日志输出
-                Debug.WriteLine($"尝试删除待办项：ID={item.Id}, Content={item.Content}");
-                Debug.WriteLine($"当前应用数量：{Model.AppAssociations.Count}");
-                if (Model.SelectedApp != null)
-                {
-                    Debug.WriteLine($"当前选中应用：{Model.SelectedApp.AppName}, TodoItems数量：{Model.SelectedApp.TodoItems.Count}");
-                }
-
                 var result = MessageBox.Show("确定要删除此待办项吗？", "确认删除", MessageBoxButton.YesNo);
                 if (result != MessageBoxResult.Yes) return;
 
                 bool deleted = false;
 
+                var app = Model.AppAssociations.FirstOrDefault(a => a.TodoItems.Contains(item));
+
                 // 1. 首先检查当前选中应用的一级待办项
-                if (Model.SelectedApp != null)
+                if (app != null)
                 {
-                    var directMatch = Model.SelectedApp.TodoItems.FirstOrDefault(t => t.Id == item.Id);
+                    var directMatch = app.TodoItems.FirstOrDefault(t => t.Id == item.Id);
                     if (directMatch != null)
                     {
                         Debug.WriteLine("在选中应用的一级待办项中找到匹配，删除中...");
-                        Model.SelectedApp.TodoItems.Remove(directMatch);
+                        app.TodoItems.Remove(directMatch);
                         deleted = true;
                     }
                     else
                     {
                         // 2. 在当前选中应用的所有子项中查找
                         Debug.WriteLine("在选中应用的子待办项中查找...");
-                        deleted = FindAndRemoveItemById(Model.SelectedApp.TodoItems, item.Id);
+                        deleted = FindAndRemoveItemById(app.TodoItems, item.Id);
                     }
                 }
 
@@ -614,9 +671,9 @@ namespace TodoOverlayApp.ViewModels
                 if (!deleted && Model.AppAssociations.Count > 0)
                 {
                     Debug.WriteLine("在所有应用中查找待办项...");
-                    foreach (var app in Model.AppAssociations)
+                    foreach (var app2 in Model.AppAssociations)
                     {
-                        if (FindAndRemoveItemById(app.TodoItems, item.Id))
+                        if (FindAndRemoveItemById(app2.TodoItems, item.Id))
                         {
                             deleted = true;
                             break;

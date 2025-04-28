@@ -16,6 +16,7 @@ namespace TodoOverlayApp.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         private string? appPath = string.Empty;
         /// <summary>
@@ -42,6 +43,20 @@ namespace TodoOverlayApp.Models
             {
                 appName = value;
                 OnPropertyChanged(nameof(AppName));
+            }
+        }
+
+        private bool isInjected = false;
+        /// <summary>
+        /// 是否注入软件
+        /// </summary>
+        public bool IsInjected
+        {
+            get => isInjected;
+            set
+            {
+                isInjected = value;
+                OnPropertyChanged(nameof(IsInjected));
             }
         }
 

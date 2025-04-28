@@ -17,6 +17,12 @@ namespace TodoOverlayApp.Models
         private string _content = "";
         private bool _isCompleted;
 
+        /// <summary>
+        /// ¸¸½Úµãid
+        /// </summary>
+        public string ParentId { get; set; }
+
+
         public string Content
         {
             get => _content;

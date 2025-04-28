@@ -82,11 +82,36 @@
                                 Style="{StaticResource ButtonIcon}"
                                 ToolTip="删除软件及所有待办项" />
                             <Button
-                                hc:IconElement.Geometry="{StaticResource UpGeometry}"
+                                hc:IconElement.Geometry="{StaticResource EyeOpenGeometry}"
                                 Command="{Binding DataContext.ForceLaunchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
                                 Style="{StaticResource ButtonIcon}"
                                 ToolTip="强制唤起该软件" />
+                            <ToggleButton
+                                BorderThickness="0"
+                                Command="{Binding DataContext.ToggleIsInjectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                IsChecked="{Binding IsInjected}"
+                                Style="{StaticResource ToggleButtonFlip}">
+                                <hc:StatusSwitchElement.CheckedElement>
+                                    <Border Background="{DynamicResource DangerBrush}">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource TextIconBrush}"
+                                            Text="开"
+                                            ToolTip="点击关闭注入功能" />
+                                    </Border>
+                                </hc:StatusSwitchElement.CheckedElement>
+                                <Border Background="{DynamicResource PrimaryBrush}">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource TextIconBrush}"
+                                        Text="关"
+                                        ToolTip="点击打开注入功能" />
+                                </Border>
+                            </ToggleButton>
 
 
                         </StackPanel>

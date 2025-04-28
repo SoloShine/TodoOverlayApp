@@ -34,19 +34,6 @@ namespace TodoOverlayApp.Models
         /// 待办项集合所在的程序集合，用于在程序中切换不同的待办项集合
         /// </summary>
         public ObservableCollection<AppAssociation> AppAssociations { get; set; } = [];
-        private AppAssociation? _selectedApp = null;
-        /// <summary>
-        /// 选择的待办项集合所在的程序
-        /// </summary>
-        public AppAssociation? SelectedApp
-        {
-            get => _selectedApp;
-            set
-            {
-                _selectedApp = value;
-                OnPropertyChanged(nameof(SelectedApp));
-            }
-        }
         #endregion
 
         #region 方法

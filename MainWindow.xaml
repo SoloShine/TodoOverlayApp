@@ -30,12 +30,12 @@
                 VerticalAlignment="Top"
                 Command="{Binding SelectRunningAppCommand}"
                 Content="选择当前运行软件" />-->
-            <Button
+            <!--<Button
                 Margin="10"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 Command="{Binding SaveConfigCommand}"
-                Content="保存配置" />
+                Content="保存配置" />-->
             <!--<Button
                 Margin="10"
                 HorizontalAlignment="Left"
