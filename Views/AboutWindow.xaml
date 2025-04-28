@@ -24,11 +24,16 @@
             FontSize="22"
             FontWeight="Bold"
             Text="待办软件管理器" />
-
+        <TextBlock Grid.Row="1" Text="作者：soloshine"/>
+        <TextBlock Grid.Row="1" Margin="0,15,0,0">
+            <Hyperlink NavigateUri="https://github.com/SoloShine/TodoOverlayApp" RequestNavigate="Hyperlink_RequestNavigate">
+                项目主页：https://github.com/SoloShine/TodoOverlayApp
+            </Hyperlink>
+        </TextBlock>
         <TextBlock
-            Grid.Row="1"
-            Margin="0,0,0,20"
-            HorizontalAlignment="Center"
+            Grid.Row="0"
+            Margin="5" VerticalAlignment="Bottom"
+            HorizontalAlignment="Right"
             FontSize="14"
             Text="版本 1.0.0" />
 
