@@ -28,6 +28,9 @@ public partial class App : Application
 
         // 确保资源中的ViewModel是唯一的  
         _mainViewModel = Current.Resources["MainViewModel"] as MainWindowViewModel;
+
+        // 应用保存的主题设置
+        _mainViewModel?.Model.ApplyThemeSettings();
     }
 }
 

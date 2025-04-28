@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace TodoOverlayApp.Models
 {
@@ -34,6 +35,42 @@ namespace TodoOverlayApp.Models
         /// 待办项集合所在的程序集合，用于在程序中切换不同的待办项集合
         /// </summary>
         public ObservableCollection<AppAssociation> AppAssociations { get; set; } = [];
+
+        // <summary>
+        /// 当前主题类型：Default或Dark
+        /// </summary>
+        private string _themeType = "Default";
+        public string ThemeType
+        {
+            get => _themeType;
+            set
+            {
+                if (_themeType != value)
+                {
+                    _themeType = value;
+                    OnPropertyChanged(nameof(ThemeType));
+                    SaveToFileAsync().ConfigureAwait(false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 主题颜色（十六进制颜色代码）
+        /// </summary>
+        private string _themeColor = "#2196F3";
+        public string ThemeColor
+        {
+            get => _themeColor;
+            set
+            {
+                if (_themeColor != value)
+                {
+                    _themeColor = value;
+                    OnPropertyChanged(nameof(ThemeColor));
+                    SaveToFileAsync().ConfigureAwait(false);
+                }
+            }
+        }
         #endregion
 
         #region 方法
@@ -70,6 +107,67 @@ namespace TodoOverlayApp.Models
             }
         }
 
+        /// <summary>
+        /// 应用主题设置
+        /// </summary>
+        public void ApplyThemeSettings()
+        {
+            try
+            {
+                // 应用主题类型（浅色/深色）
+                var mergedDicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+
+                // 清除现有的主题资源
+                var themeDicts = new List<System.Windows.ResourceDictionary>();
+                foreach (var dict in mergedDicts)
+                {
+                    if (dict.Source != null &&
+                        (dict.Source.ToString().Contains("Theme") ||
+                         dict.Source.ToString().Contains("Skin")))
+                    {
+                        themeDicts.Add(dict);
+                    }
+                }
+
+                foreach (var dict in themeDicts)
+                {
+                    mergedDicts.Remove(dict);
+                }
+
+                // 添加主题类型资源
+                string skinPath = ThemeType == "Dark"
+                    ? "pack://application:,,,/HandyControl;component/Themes/SkinDark.xaml"
+                    : "pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml";
+
+                mergedDicts.Add(new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri(skinPath)
+                });
+
+                // 重新加载主题
+                mergedDicts.Add(new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri("pack://application:,,,/HandyControl;component/Themes/Theme.xaml")
+                });
+
+                // 应用主题颜色
+                if (!string.IsNullOrEmpty(ThemeColor))
+                {
+                    var themeColor = (Color)ColorConverter.ConvertFromString(ThemeColor);
+                    System.Windows.Application.Current.Resources["PrimaryBrush"] = new SolidColorBrush(themeColor);
+                    System.Windows.Application.Current.Resources["DarkPrimaryBrush"] = new SolidColorBrush(
+                        Color.FromRgb(
+                            (byte)Math.Max(0, themeColor.R - 40),
+                            (byte)Math.Max(0, themeColor.G - 40),
+                            (byte)Math.Max(0, themeColor.B - 40)
+                        ));
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"应用主题设置时出错: {ex.Message}");
+            }
+        }
 
         public static MainWindowModel? LoadFromFile()
         {

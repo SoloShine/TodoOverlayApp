@@ -1,6 +1,7 @@
 ﻿
 using System.Windows;
 using TodoOverlayApp.ViewModels;
+using TodoOverlayApp.Views;
 
 namespace TodoOverlayApp
 {
@@ -19,6 +20,29 @@ namespace TodoOverlayApp
             {
                 vm.Cleanup();
             }
+        }
+
+        private void ThemeMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var themeWindow = new ThemeSettingsWindow
+            {
+                Owner = this
+            };
+            themeWindow.ShowDialog();
+        }
+
+        private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var aboutWindow = new AboutWindow
+            {
+                Owner = this
+            };
+            aboutWindow.ShowDialog();
+        }
+
+        private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
     }
 }
