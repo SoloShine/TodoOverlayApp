@@ -7,97 +7,215 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="主题配置"
     Width="400"
-    Height="300"
+    Height="500"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
-    <Grid Margin="15">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <Window.Resources>
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+    </Window.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="15">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <TextBlock
-            Grid.Row="0"
-            Margin="0,0,0,10"
-            FontSize="16"
-            FontWeight="Bold"
-            Text="应用主题" />
+            <!-- 应用主题部分 -->
+            <TextBlock 
+                Grid.Row="0" 
+                Text="应用主题" 
+                Style="{StaticResource SectionHeaderStyle}"/>
 
-        <StackPanel Grid.Row="1" Margin="0,0,0,20">
-            <TextBlock Margin="0,0,0,5" Text="选择主题：" />
-            <ComboBox
-                x:Name="ThemeComboBox"
-                SelectedIndex="0"
-                SelectionChanged="ThemeComboBox_SelectionChanged">
-                <ComboBoxItem Content="浅色主题" />
-                <ComboBoxItem Content="深色主题" />
-            </ComboBox>
-        </StackPanel>
+            <StackPanel Grid.Row="1" Margin="0,0,0,20">
+                <TextBlock Text="选择主题：" Margin="0,0,0,5"/>
+                <ComboBox x:Name="ThemeComboBox" SelectedIndex="0" SelectionChanged="ThemeComboBox_SelectionChanged">
+                    <ComboBoxItem Content="浅色主题"/>
+                    <ComboBoxItem Content="深色主题"/>
+                </ComboBox>
+            </StackPanel>
 
-        <TextBlock
-            Grid.Row="2"
-            Margin="0,0,0,10"
-            FontSize="16"
-            FontWeight="Bold"
-            Text="主题颜色" />
+            <!-- 主题颜色部分 -->
+            <TextBlock 
+                Grid.Row="2" 
+                Text="主题颜色" 
+                Style="{StaticResource SectionHeaderStyle}"/>
 
-        <WrapPanel x:Name="ColorsPanel" Grid.Row="3">
-            <!--  这里将动态添加颜色按钮  -->
-            <RadioButton
-                Margin="5"
-                Background="#2196F3"
-                BorderBrush="#2196F3"
-                Checked="ColorRadioButton_Checked"
-                Foreground="#2196F3"
-                GroupName="ThemeColors"
-                Style="{StaticResource RadioButtonIcon}"
-                Tag="#2196F3" />
-            <RadioButton
-                Margin="5"
-                Background="#4CAF50"
-                BorderBrush="#4CAF50"
-                Checked="ColorRadioButton_Checked"
-                Foreground="#4CAF50"
-                GroupName="ThemeColors"
-                Style="{StaticResource RadioButtonIcon}"
-                Tag="#4CAF50" />
-            <RadioButton
-                Margin="5"
-                Background="#FF5722"
-                BorderBrush="#FF5722"
-                Checked="ColorRadioButton_Checked"
-                Foreground="#FF5722"
-                GroupName="ThemeColors"
-                Style="{StaticResource RadioButtonIcon}"
-                Tag="#FF5722" />
-            <RadioButton
-                Margin="5"
-                Background="#9C27B0"
-                BorderBrush="#9C27B0"
-                Checked="ColorRadioButton_Checked"
-                Foreground="#9C27B0"
-                GroupName="ThemeColors"
-                Style="{StaticResource RadioButtonIcon}"
-                Tag="#9C27B0" />
-            <RadioButton
-                Margin="5"
-                Background="#FF9800"
-                BorderBrush="#FF9800"
-                Checked="ColorRadioButton_Checked"
-                Foreground="#FF9800"
-                GroupName="ThemeColors"
-                Style="{StaticResource RadioButtonIcon}"
-                Tag="#FF9800" />
-        </WrapPanel>
+            <WrapPanel Grid.Row="3" x:Name="ColorsPanel" Margin="0,0,0,20">
+                <!-- 预定义的颜色选择器 -->
+                <RadioButton 
+                    Style="{StaticResource RadioButtonIcon}" 
+                    Foreground="#2196F3"
+                    Background="#2196F3"
+                    BorderBrush="#2196F3"
+                    Margin="5"
+                    GroupName="ThemeColors"
+                    Tag="#2196F3"
+                    Checked="ColorRadioButton_Checked"/>
+                <RadioButton 
+                    Style="{StaticResource RadioButtonIcon}" 
+                    Foreground="#4CAF50"
+                    Background="#4CAF50"
+                    BorderBrush="#4CAF50"
+                    Margin="5"
+                    GroupName="ThemeColors"
+                    Tag="#4CAF50"
+                    Checked="ColorRadioButton_Checked"/>
+                <RadioButton 
+                    Style="{StaticResource RadioButtonIcon}" 
+                    Foreground="#FF5722"
+                    Background="#FF5722"
+                    BorderBrush="#FF5722"
+                    Margin="5"
+                    GroupName="ThemeColors"
+                    Tag="#FF5722"
+                    Checked="ColorRadioButton_Checked"/>
+                <RadioButton 
+                    Style="{StaticResource RadioButtonIcon}" 
+                    Foreground="#9C27B0"
+                    Background="#9C27B0"
+                    BorderBrush="#9C27B0"
+                    Margin="5"
+                    GroupName="ThemeColors"
+                    Tag="#9C27B0"
+                    Checked="ColorRadioButton_Checked"/>
+                <RadioButton 
+                    Style="{StaticResource RadioButtonIcon}" 
+                    Foreground="#FF9800"
+                    Background="#FF9800"
+                    BorderBrush="#FF9800"
+                    Margin="5"
+                    GroupName="ThemeColors"
+                    Tag="#FF9800"
+                    Checked="ColorRadioButton_Checked"/>
+            </WrapPanel>
 
-        <Button
-            Grid.Row="4"
-            Width="80"
-            HorizontalAlignment="Right"
-            Click="OkButton_Click"
-            Content="确定" />
-    </Grid>
+            <!-- 悬浮窗设置部分 -->
+            <TextBlock 
+                Grid.Row="4" 
+                Text="悬浮窗设置" 
+                Style="{StaticResource SectionHeaderStyle}"/>
+
+            <!-- 悬浮窗背景颜色 -->
+            <StackPanel Grid.Row="5" Margin="0,0,0,10">
+                <TextBlock Text="背景颜色：" Margin="0,0,0,5"/>
+                <WrapPanel x:Name="OverlayColorsPanel">
+                    <RadioButton 
+                        Style="{StaticResource RadioButtonIcon}" 
+                        Background="#D3D3D3"
+                        BorderBrush="#D3D3D3"
+                        Foreground="#D3D3D3"
+                        Margin="5"
+                        GroupName="OverlayColors"
+                        Tag="#D3D3D3"
+                        Checked="OverlayColorRadioButton_Checked"/>
+                    <RadioButton 
+                        Style="{StaticResource RadioButtonIcon}" 
+                        Background="#FFFFFF"
+                        BorderBrush="#CCCCCC"
+                        Foreground="#FFFFFF"
+                        Margin="5"
+                        GroupName="OverlayColors"
+                        Tag="#FFFFFF"
+                        Checked="OverlayColorRadioButton_Checked"/>
+                    <RadioButton 
+                        Style="{StaticResource RadioButtonIcon}" 
+                        Background="#F0F0F0"
+                        BorderBrush="#F0F0F0"
+                        Foreground="#F0F0F0"
+                        Margin="5"
+                        GroupName="OverlayColors"
+                        Tag="#F0F0F0"
+                        Checked="OverlayColorRadioButton_Checked"/>
+                    <RadioButton 
+                        Style="{StaticResource RadioButtonIcon}" 
+                        Background="#E0E0E0"
+                        BorderBrush="#E0E0E0"
+                        Foreground="#E0E0E0"
+                        Margin="5"
+                        GroupName="OverlayColors"
+                        Tag="#E0E0E0"
+                        Checked="OverlayColorRadioButton_Checked"/>
+                    <RadioButton 
+                        Style="{StaticResource RadioButtonIcon}" 
+                        Background="#000000"
+                        BorderBrush="#000000"
+                        Foreground="#000000"
+                        Margin="5"
+                        GroupName="OverlayColors"
+                        Tag="#000000"
+                        Checked="OverlayColorRadioButton_Checked"/>
+                </WrapPanel>
+            </StackPanel>
+
+            <!-- 悬浮窗不透明度 -->
+            <StackPanel Grid.Row="6" Margin="0,10,0,20">
+                <TextBlock Text="不透明度：" Margin="0,0,0,5"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="60"/>
+                    </Grid.ColumnDefinitions>
+                    <Slider 
+                        x:Name="OpacitySlider" 
+                        Minimum="0.1" 
+                        Maximum="1.0" 
+                        Value="0.3" 
+                        TickFrequency="0.1"
+                        IsSnapToTickEnabled="True"
+                        ValueChanged="OpacitySlider_ValueChanged"/>
+                    <TextBlock 
+                        Grid.Column="1" 
+                        Text="{Binding ElementName=OpacitySlider, Path=Value, StringFormat={}{0:P0}}" 
+                        VerticalAlignment="Center" 
+                        HorizontalAlignment="Right"/>
+                </Grid>
+            </StackPanel>
+
+            <!-- 预览部分 -->
+            <TextBlock 
+                Grid.Row="7" 
+                Text="预览" 
+                Style="{StaticResource SectionHeaderStyle}"/>
+
+            <Border 
+                Grid.Row="8" 
+                x:Name="PreviewBorder"
+                Height="100" 
+                CornerRadius="10" 
+                Background="LightGray"
+                Opacity="0.3"
+                BorderBrush="#CCCCCC"
+                BorderThickness="1"
+                Margin="0,0,0,20">
+                <DockPanel>
+                    <Label DockPanel.Dock="Top" Content="待办事项预览" HorizontalAlignment="Left"/>
+                    <TextBlock 
+                        DockPanel.Dock="Bottom"
+                        Text="● 这是一个示例待办项" 
+                        Margin="20,5" 
+                        VerticalAlignment="Center"/>
+                </DockPanel>
+            </Border>
+
+            <!-- 确定按钮 -->
+            <Button 
+                Grid.Row="9" 
+                Content="确定" 
+                HorizontalAlignment="Right" 
+                Width="80" 
+                Click="OkButton_Click"/>
+        </Grid>
+    </ScrollViewer>
 </Window>

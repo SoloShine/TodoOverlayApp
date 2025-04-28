@@ -71,6 +71,42 @@ namespace TodoOverlayApp.Models
                 }
             }
         }
+
+        /// <summary>
+        /// 悬浮窗背景颜色（十六进制颜色代码）
+        /// </summary>
+        private string _overlayBackground = "#D3D3D3"; // LightGray 的十六进制值
+        public string OverlayBackground
+        {
+            get => _overlayBackground;
+            set
+            {
+                if (_overlayBackground != value)
+                {
+                    _overlayBackground = value;
+                    OnPropertyChanged(nameof(OverlayBackground));
+                    SaveToFileAsync().ConfigureAwait(false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 悬浮窗不透明度 (0.0-1.0)
+        /// </summary>
+        private double _overlayOpacity = 0.3;
+        public double OverlayOpacity
+        {
+            get => _overlayOpacity;
+            set
+            {
+                if (_overlayOpacity != value)
+                {
+                    _overlayOpacity = Math.Clamp(value, 0.1, 1.0); // 确保在有效范围内
+                    OnPropertyChanged(nameof(OverlayOpacity));
+                    SaveToFileAsync().ConfigureAwait(false);
+                }
+            }
+        }
         #endregion
 
         #region 方法

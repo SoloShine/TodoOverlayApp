@@ -21,12 +21,20 @@
         </HierarchicalDataTemplate>
     </Window.Resources>
     <Border
-        Background="LightGray"
+        x:Name="MainBorder"
+        Background="AntiqueWhite"
         CornerRadius="10"
         Opacity="0.3">
         <DockPanel>
-            <Label Content="代办事项" DockPanel.Dock="Top" />
-            <TreeView DockPanel.Dock="Bottom" ItemsSource="{Binding TodoItems}">
+            <TextBlock
+                Margin="5"
+                HorizontalAlignment="Left"
+                DockPanel.Dock="Top"
+                Text="待办事项" />
+            <TreeView
+                Background="Transparent"
+                DockPanel.Dock="Bottom"
+                ItemsSource="{Binding TodoItems}">
                 <TreeView.ItemTemplate>
                     <StaticResource ResourceKey="TodoItemTemplate" />
                 </TreeView.ItemTemplate>

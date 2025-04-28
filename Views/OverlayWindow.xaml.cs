@@ -1,9 +1,8 @@
-using System;
-using System.Windows;
 using System.Collections.ObjectModel;
-using System.Linq;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
 using TodoOverlayApp.Models;
-using System.Diagnostics;
 
 namespace TodoOverlayApp.Views
 {
@@ -11,20 +10,43 @@ namespace TodoOverlayApp.Views
     {
         public ObservableCollection<TodoItem> TodoItems { get; set; }
 
-        private Point _lastPosition;
-        
         public OverlayWindow(ObservableCollection<TodoItem> todoItems)
         {
             InitializeComponent();
             TodoItems = todoItems;
-            this.DataContext = this;
+            DataContext = this;
+
+            // 应用悬浮窗设置
+            ApplyOverlaySettings();
         }
 
-
-
-        private void Window_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        /// <summary>
+        /// 应用从模型中读取的悬浮窗设置
+        /// </summary>
+        public void ApplyOverlaySettings()
         {
-            this.DragMove();
+            try
+            {
+                var model = App.MainViewModel?.Model;
+                if (model != null)
+                {
+                    // 设置背景颜色
+                    Color backgroundColor = (Color)ColorConverter.ConvertFromString(model.OverlayBackground);
+                    MainBorder.Background = new SolidColorBrush(backgroundColor);
+
+                    // 设置不透明度
+                    MainBorder.Opacity = model.OverlayOpacity;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"应用悬浮窗设置时出错: {ex.Message}");
+            }
+        }
+
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            DragMove();
         }
     }
 }

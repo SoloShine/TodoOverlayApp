@@ -47,7 +47,6 @@ namespace TodoOverlayApp.ViewModels
         public ICommand RemoveAppCommand { get; }
         public ICommand SelectAppCommand { get; }
         public ICommand SelectRunningAppCommand { get; }
-        public ICommand SaveConfigCommand { get; }
         public ICommand ForceLaunchCommand { get; }
         public ICommand AddTodoItemCommand { get; }
         public ICommand DeleteTodoItemCommand { get; }
@@ -74,7 +73,6 @@ namespace TodoOverlayApp.ViewModels
             RemoveAppCommand = new RelayCommand(RemoveApp);
             SelectAppCommand = new RelayCommand(SelectApp);
             SelectRunningAppCommand = new RelayCommand(SelectRunningApp);
-            SaveConfigCommand = new RelayCommand(SaveConfig);
             ForceLaunchCommand = new RelayCommand(ForceLaunch);
             AddTodoItemCommand = new RelayCommand(AddTodoItem);
             DeleteTodoItemCommand = new RelayCommand(DeleteTodoItem);
@@ -291,6 +289,7 @@ namespace TodoOverlayApp.ViewModels
                         {
                             Topmost = true
                         };
+                        ((OverlayWindow)overlayWindow).ApplyOverlaySettings();
 
                         var timer = new System.Windows.Threading.DispatcherTimer
                         {
@@ -320,53 +319,6 @@ namespace TodoOverlayApp.ViewModels
         }
 
         /// <summary>
-        /// 保存配置并启动悬浮窗
-        /// </summary>
-        /// <param name="parameter"></param>
-        private void SaveConfig(object? parameter)
-        {
-            //if (Model.SelectedApp == null || string.IsNullOrEmpty(Model.SelectedApp.AppPath)) return;
-            //if (!File.Exists(Model.SelectedApp.AppPath))
-            //{
-            //    MessageBox.Show("关联软件未安装，请检查路径。");
-            //    return;
-            //}
-
-            //var processName = Path.GetFileNameWithoutExtension(Model.SelectedApp.AppPath);
-            //var targetProcesses = Process.GetProcessesByName(processName);
-            //if (targetProcesses.Length == 0) return;
-
-            //var targetProcess = targetProcesses[0];
-            //var targetWindowHandle = targetProcess.MainWindowHandle;
-            
-            //if (!Utils.NativeMethods.IsWindow(targetWindowHandle))
-            //{
-            //    MessageBox.Show("无法获取有效的窗口句柄。");
-            //    return;
-            //}
-
-            //var appKey = Model.SelectedApp.AppPath;
-            //if (!_overlayWindows.ContainsKey(appKey))
-            //{
-            //    var overlayWindow = new OverlayWindow(Model.SelectedApp.TodoItems)
-            //    {
-            //        Topmost = true
-            //    };
-
-            //    var timer = new System.Windows.Threading.DispatcherTimer
-            //    {
-            //        Interval = TimeSpan.FromMilliseconds(100)
-            //    };
-            //    timer.Tick += (s, e) => UpdateOverlayPosition(overlayWindow, targetWindowHandle);
-            //    timer.Start();
-
-            //    overlayWindow.Closed += (s, e) => timer.Stop();
-            //    overlayWindow.Show();
-            //    _overlayWindows[appKey] = overlayWindow;
-            //}
-        }
-
-        /// <summary>
         /// 更新悬浮窗的位置，使其始终位于目标窗口的下方。
         /// </summary>
         /// <param name="overlayWindow"></param>
@@ -389,10 +341,6 @@ namespace TodoOverlayApp.ViewModels
                     // 调整悬浮窗位置，确保它不会超出屏幕边界
                     double adjustedLeft = Math.Max(0, dpiScaledLeft);
                     double adjustedTop = Math.Max(0, dpiScaledTop - overlayWindow.ActualHeight);
-
-                    Debug.WriteLine($"原始位置: Left={rect.Left}, Bottom={rect.Bottom}");
-                    Debug.WriteLine($"DPI缩放后: Left={dpiScaledLeft}, Top={dpiScaledTop}");
-                    Debug.WriteLine($"最终位置: Left={adjustedLeft}, Top={adjustedTop}");
 
                     // 设置悬浮窗的位置
                     double offsetX = 0; // 水平偏移量
