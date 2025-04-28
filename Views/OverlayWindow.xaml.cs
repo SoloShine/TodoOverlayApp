@@ -44,6 +44,14 @@ namespace TodoOverlayApp.Views
             }
         }
 
+        /// <summary>
+        /// 获取窗口句柄的辅助方法
+        /// </summary>
+        public IntPtr GetHandle()
+        {
+            return new System.Windows.Interop.WindowInteropHelper(this).Handle;
+        }
+
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             DragMove();

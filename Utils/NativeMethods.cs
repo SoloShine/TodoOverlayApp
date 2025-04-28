@@ -81,6 +81,22 @@ namespace TodoOverlayApp.Utils
 
         public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+
+
+        // GetWindow ÃüÁî
+        public const uint GW_OWNER = 4;
+        public const uint GW_HWNDNEXT = 2;
+        public const uint GW_HWNDPREV = 3;
+
+        // SetWindowLong Ë÷Òý
+        public const int GWL_HWNDPARENT = -8;
+        public const int GWL_EXSTYLE = -20;
+
+        // SetWindowPos ±êÖ¾
+        public const uint SWP_NOACTIVATE = 0x0010;
+
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT

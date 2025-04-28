@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using HandyControl.Tools;
 using Microsoft.Win32;
 using TodoOverlayApp.Models;
 using TodoOverlayApp.Views;
@@ -285,24 +286,57 @@ namespace TodoOverlayApp.ViewModels
                     // 启动悬浮窗
                     if (!_overlayWindows.ContainsKey(appKey))
                     {
+                        // 创建悬浮窗
                         var overlayWindow = new OverlayWindow(app.TodoItems)
                         {
-                            Topmost = true
+                            // 重要：不设置Topmost属性，而是使用窗口层次控制
+                            Topmost = false
                         };
-                        ((OverlayWindow)overlayWindow).ApplyOverlaySettings();
+                        overlayWindow.ApplyOverlaySettings();
 
+                        // 获取目标窗口的信息
+                        IntPtr targetOwner = Utils.NativeMethods.GetWindow(targetWindowHandle, Utils.NativeMethods.GW_OWNER);
+
+                        // 显示窗口但不激活
+                        overlayWindow.Show();
+
+                        // 设置悬浮窗为目标窗口的子窗口（在Z-order中）
+                        Utils.NativeMethods.SetWindowLong(
+                            overlayWindow.GetHandle(),
+                            Utils.NativeMethods.GWL_HWNDPARENT,
+                            targetWindowHandle.ToInt32());
+
+                        // 使用定时器更新悬浮窗位置
                         var timer = new System.Windows.Threading.DispatcherTimer
                         {
                             Interval = TimeSpan.FromMilliseconds(100)
                         };
-                        timer.Tick += (s, e) => UpdateOverlayPosition(overlayWindow, targetWindowHandle);
+                        timer.Tick += (s, e) =>
+                        {
+                            // 更新位置
+                            UpdateOverlayPosition(overlayWindow, targetWindowHandle);
+
+                            // 获取目标窗口上方的窗口句柄
+                            IntPtr hAbove = Utils.NativeMethods.GetWindow(targetWindowHandle, Utils.NativeMethods.GW_HWNDPREV);
+                            if (hAbove == IntPtr.Zero)
+                            {
+                                // 没有上方的窗口时，直接使用目标窗口句柄
+                                hAbove = targetWindowHandle;
+                            }
+
+                            // 将悬浮窗置于 hAbove 前面（显示在目标窗口上方，但不全局置顶）
+                            Utils.NativeMethods.SetWindowPos(
+                                overlayWindow.GetHandle(),
+                                hAbove,
+                                0, 0, 0, 0,
+                                Utils.NativeMethods.SWP_NOMOVE | Utils.NativeMethods.SWP_NOSIZE | Utils.NativeMethods.SWP_NOACTIVATE);
+
+                        };
                         timer.Start();
 
                         overlayWindow.Closed += (s, e) => timer.Stop();
-                        overlayWindow.Show();
                         _overlayWindows[appKey] = overlayWindow;
                     }
-                    
                 }
                 else
                 {
@@ -314,8 +348,6 @@ namespace TodoOverlayApp.ViewModels
                     }
                 }
             }
-                
-
         }
 
         /// <summary>
