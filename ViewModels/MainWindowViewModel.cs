@@ -153,14 +153,52 @@ namespace TodoOverlayApp.ViewModels
 
             var selectWindow = new Window
             {
-                Title = "选择当前运行软件",
+                Title = "选择当前运行软件"+"("+processes.Count+")",
                 Width = 300,
                 Height = 400,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                SizeToContent = SizeToContent.Height, // 根据内容调整高度
+                MaxHeight = 600 // 设置最大高度，避免窗口过大
             };
 
-            var searchBox = new TextBox { Text = "搜索进程..." };
-            var listBox = new ListBox();
+            // 主布局容器
+            var mainPanel = new DockPanel { LastChildFill = true };
+
+            // 搜索框放在顶部
+            var searchBox = new TextBox
+            {
+                Text = "搜索进程...",
+                Margin = new Thickness(5),
+                Padding = new Thickness(3)
+            };
+            DockPanel.SetDock(searchBox, Dock.Top);
+            mainPanel.Children.Add(searchBox);
+
+            // 选择按钮放在底部
+            var selectButton = new Button
+            {
+                Content = "选择",
+                Margin = new Thickness(5),
+                Padding = new Thickness(5, 3, 5, 3),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            DockPanel.SetDock(selectButton, Dock.Bottom);
+            mainPanel.Children.Add(selectButton);
+
+            // 列表框包装在ScrollViewer中以提供滚动功能
+            var listBox = new ListBox
+            {
+                Margin = new Thickness(5),
+                MinHeight = 200 // 确保有足够的高度显示多个条目
+            };
+            var scrollViewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto, // 自动显示滚动条
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Content = listBox
+            };
+            mainPanel.Children.Add(scrollViewer); // 添加到主面板
+
             void ChooseFunc()
             {
                 if (listBox.SelectedIndex != -1 && Model.SelectedApp != null)
@@ -177,8 +215,10 @@ namespace TodoOverlayApp.ViewModels
                     }
                 }
                 selectWindow.Close();
-            };
+            }
+
             listBox.MouseDoubleClick += (s, e) => ChooseFunc();
+
             void UpdateListBox()
             {
                 var searchText = searchBox.Text == "搜索进程..." ? "" : searchBox.Text.ToLower();
@@ -191,13 +231,23 @@ namespace TodoOverlayApp.ViewModels
                 }
             }
 
-            searchBox.TextChanged += (s, e) => UpdateListBox();
-            UpdateListBox();
+            searchBox.GotFocus += (s, e) => {
+                if (searchBox.Text == "搜索进程...")
+                    searchBox.Text = "";
+            };
 
-            var selectButton = new Button { Content = "选择" };
+            searchBox.LostFocus += (s, e) => {
+                if (string.IsNullOrWhiteSpace(searchBox.Text))
+                    searchBox.Text = "搜索进程...";
+            };
+
+            searchBox.TextChanged += (s, e) => UpdateListBox();
             selectButton.Click += (s, e) => ChooseFunc();
 
-            selectWindow.Content = new StackPanel { Children = { searchBox, listBox, selectButton } };
+            // 初始化列表
+            UpdateListBox();
+
+            selectWindow.Content = mainPanel;
             selectWindow.ShowDialog();
         }
 
@@ -459,7 +509,7 @@ namespace TodoOverlayApp.ViewModels
         /// </summary>
         /// <param name="processId">进程ID</param>
         /// <returns>窗口句柄列表</returns>
-        private List<IntPtr> FindWindowsForProcess(int processId)
+        private static List<IntPtr> FindWindowsForProcess(int processId)
         {
             List<IntPtr> result = new List<IntPtr>();
 
