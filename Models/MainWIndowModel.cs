@@ -11,12 +11,11 @@ using System.Threading.Tasks;
 
 namespace TodoOverlayApp.Models
 {
-    public class MainWIndowModel : INotifyPropertyChanged
+    public class MainWindowModel : INotifyPropertyChanged
     {
-        public MainWIndowModel()
+        public MainWindowModel()
         {
             AppAssociations.CollectionChanged += OnTodoItemsChanged;
-
         }
 
         #region INotifyPropertyChanged 实现
@@ -25,6 +24,8 @@ namespace TodoOverlayApp.Models
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            //保存配置到文件
+            //SaveToFileAsync().ConfigureAwait(false);
         }
         #endregion
 
@@ -32,7 +33,7 @@ namespace TodoOverlayApp.Models
         /// <summary>
         /// 待办项集合所在的程序集合，用于在程序中切换不同的待办项集合
         /// </summary>
-        public ObservableCollection<AppAssociation> AppAssociations { get; } = [];
+        public ObservableCollection<AppAssociation> AppAssociations { get; set; } = [];
         private AppAssociation? _selectedApp = null;
         /// <summary>
         /// 选择的待办项集合所在的程序
@@ -51,7 +52,10 @@ namespace TodoOverlayApp.Models
         #region 方法
 
         private static readonly string ConfigPath = "app_associations.json";
-        private static readonly JsonSerializerOptions CachedJsonSerializerOptions = new() { WriteIndented = true };
+        private static readonly JsonSerializerOptions CachedJsonSerializerOptions = new() {
+            //PropertyNameCaseInsensitive = true,
+            //ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
+            WriteIndented = true };
         /// <summary>
         /// 当待办项集合发生变化时，触发保存配置到文件
         /// </summary>
@@ -66,7 +70,7 @@ namespace TodoOverlayApp.Models
         /// 异步保存配置到文件（延迟执行）
         /// </summary>
         /// <returns></returns>
-        private async Task SaveToFileAsync()
+        public async Task SaveToFileAsync()
         {
             try
             {
@@ -78,21 +82,17 @@ namespace TodoOverlayApp.Models
                 Debug.WriteLine($"保存配置失败: {ex.Message}");
             }
         }
-        public static MainWIndowModel? LoadFromFile()
+
+
+        public static MainWindowModel? LoadFromFile()
         {
             try
             {
                 if (File.Exists(ConfigPath))
                 {
                     var json = File.ReadAllText(ConfigPath);
-                    var options = new JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        PropertyNameCaseInsensitive = true,
-                        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve
-                    };
 
-                    var result = JsonSerializer.Deserialize<MainWIndowModel>(json, options);
+                    var result = JsonSerializer.Deserialize<MainWindowModel>(json, CachedJsonSerializerOptions);
                     if (result != null)
                     {
                         Debug.WriteLine($"从文件加载成功：{result.AppAssociations.Count} 个应用关联");
@@ -100,8 +100,7 @@ namespace TodoOverlayApp.Models
                         // 特殊处理 - 确保所有子集合都被初始化
                         foreach (var app in result.AppAssociations)
                         {
-                            if (app.TodoItems == null)
-                                app.TodoItems = new ObservableCollection<TodoItem>();
+                            app.TodoItems ??= [];
 
                             foreach (var item in app.TodoItems)
                             {
@@ -123,13 +122,12 @@ namespace TodoOverlayApp.Models
                 Debug.WriteLine($"异常详情: {ex}");
             }
 
-            return new MainWIndowModel();
+            return new MainWindowModel();
         }
 
         private static void EnsureSubItemsInitialized(TodoItem item)
         {
-            if (item.SubItems == null)
-                item.SubItems = new ObservableCollection<TodoItem>();
+            item.SubItems ??= [];
 
             foreach (var subItem in item.SubItems)
             {

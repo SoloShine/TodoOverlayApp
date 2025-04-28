@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -28,11 +29,11 @@ namespace TodoOverlayApp.ViewModels
         private readonly Dictionary<string, OverlayWindow> _overlayWindows = [];
 
 
-        private MainWIndowModel model;
+        private MainWindowModel model;
         /// <summary>
         /// Model 属性，用于绑定到主窗口的视图模型。
         /// </summary>
-        public MainWIndowModel Model
+        public MainWindowModel Model
         {
             get => model;
             set
@@ -57,14 +58,14 @@ namespace TodoOverlayApp.ViewModels
         public MainWindowViewModel()
         {
             // 尝试从文件加载配置，如果加载失败则创建新的模型
-            var loadedModel = MainWIndowModel.LoadFromFile();
+            var loadedModel = MainWindowModel.LoadFromFile();
             if (loadedModel != null)
             {
                 model = loadedModel;
             }
             else
             {
-                model = new MainWIndowModel();
+                model = new MainWindowModel();
             }
 
             AddAppCommand = new RelayCommand(AddApp);
@@ -231,8 +232,7 @@ namespace TodoOverlayApp.ViewModels
             {
                 var overlayWindow = new OverlayWindow(Model.SelectedApp.TodoItems)
                 {
-                    Topmost = true,
-                    //DataContext = this
+                    Topmost = true
                 };
 
                 var timer = new System.Windows.Threading.DispatcherTimer
@@ -296,19 +296,195 @@ namespace TodoOverlayApp.ViewModels
         }
 
         /// <summary>
-        /// 强制启动关联软件（如果已安装）
+        /// 强制启动关联软件（如果已安装）或将其从最小化/隐藏状态恢复到前台
         /// </summary>
         /// <param name="parameter"></param>
         private void ForceLaunch(object? parameter)
         {
-            if (Model.SelectedApp != null && File.Exists(Model.SelectedApp.AppPath))
+            if (parameter is AppAssociation app)
             {
-                Process.Start(Model.SelectedApp.AppPath);
+                if (File.Exists(app.AppPath))
+                {
+                    // 获取目标进程名
+                    string processName = Path.GetFileNameWithoutExtension(app.AppPath);
+                    Process[] processes = Process.GetProcessesByName(processName);
+
+                    if (processes.Length > 0)
+                    {
+                        // 进程已在运行
+                        Process targetProcess = processes[0];
+                        int targetProcessId = targetProcess.Id;
+
+                        Debug.WriteLine($"找到正在运行的进程: {processName}, ID: {targetProcessId}");
+
+                        // 尝试使用主窗口句柄
+                        IntPtr mainWindowHandle = targetProcess.MainWindowHandle;
+                        if (mainWindowHandle != IntPtr.Zero && Utils.NativeMethods.IsWindow(mainWindowHandle))
+                        {
+                            Debug.WriteLine("找到主窗口句柄，尝试将其激活");
+                            ActivateWindow(mainWindowHandle, app.AppName);
+                        }
+                        else
+                        {
+                            // 主窗口不存在或不可用，查找进程的所有窗口
+                            Debug.WriteLine("主窗口不可用，尝试查找进程的所有窗口");
+                            List<IntPtr> windowHandles = FindWindowsForProcess(targetProcessId);
+
+                            if (windowHandles.Count > 0)
+                            {
+                                // 优先选择可见窗口
+                                IntPtr visibleWindow = windowHandles.FirstOrDefault(
+                                    hwnd => Utils.NativeMethods.IsWindowVisible(hwnd));
+
+                                if (visibleWindow != IntPtr.Zero)
+                                {
+                                    Debug.WriteLine("找到可见窗口，尝试激活");
+                                    ActivateWindow(visibleWindow, app.AppName);
+                                }
+                                else
+                                {
+                                    // 如果没有可见窗口，尝试激活第一个找到的窗口
+                                    Debug.WriteLine("没有找到可见窗口，尝试激活第一个窗口");
+                                    ActivateWindow(windowHandles[0], app.AppName);
+                                }
+                            }
+                            else
+                            {
+                                // 没有找到窗口，提示用户
+                                Debug.WriteLine("没有找到任何窗口");
+
+                                MessageBoxResult result = MessageBox.Show(
+                                    $"应用 {app.AppName ?? Path.GetFileName(app.AppPath)} 正在运行，但未找到可以激活的窗口。\n\n" +
+                                    "这可能是因为:\n" +
+                                    "- 程序以系统服务或后台进程方式运行\n" +
+                                    "- 程序窗口被特殊隐藏\n" +
+                                    "- 程序窗口属于不同的用户会话\n\n" +
+                                    "您想要尝试启动一个新的程序实例吗？",
+                                    "无法激活窗口",
+                                    MessageBoxButton.YesNo,
+                                    MessageBoxImage.Question);
+
+                                if (result == MessageBoxResult.Yes)
+                                {
+                                    try
+                                    {
+                                        // 尝试启动新实例，但不关闭现有进程
+                                        Process.Start(new ProcessStartInfo(app.AppPath) { UseShellExecute = true });
+                                        Debug.WriteLine("尝试启动新实例");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Debug.WriteLine($"启动新实例失败: {ex.Message}");
+                                        MessageBox.Show($"启动应用失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // 应用未运行，启动它
+                        try
+                        {
+                            Process.Start(new ProcessStartInfo(app.AppPath) { UseShellExecute = true });
+                            Debug.WriteLine($"启动应用: {app.AppName ?? Path.GetFileName(app.AppPath)}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"启动应用失败: {ex.Message}");
+                            MessageBox.Show($"启动应用失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("关联软件未安装，请检查路径。");
+                }
             }
-            else
+        }
+
+        /// <summary>
+        /// 激活指定的窗口并将其带到前台
+        /// </summary>
+        /// <param name="windowHandle">窗口句柄</param>
+        /// <param name="appName">应用名称，用于调试输出</param>
+        private static void ActivateWindow(IntPtr windowHandle, string? appName)
+        {
+            try
             {
-                MessageBox.Show("关联软件未安装，请检查路径。");
+                // 首先检查窗口是否最小化
+                bool isIconic = Utils.NativeMethods.IsIconic(windowHandle);
+                if (isIconic)
+                {
+                    Debug.WriteLine($"窗口已最小化，先恢复它");
+                    Utils.NativeMethods.ShowWindow(windowHandle, Utils.NativeMethods.SW_RESTORE);
+                }
+
+                // 获取窗口当前样式
+                int style = Utils.NativeMethods.GetWindowLong(windowHandle, Utils.NativeMethods.GWL_STYLE);
+
+                // 如果窗口不可见，尝试使其可见
+                if ((style & Utils.NativeMethods.WS_VISIBLE) == 0)
+                {
+                    Debug.WriteLine("窗口不可见，尝试使其可见");
+                    Utils.NativeMethods.SetWindowLong(
+                        windowHandle,
+                        Utils.NativeMethods.GWL_STYLE,
+                        style | Utils.NativeMethods.WS_VISIBLE);
+
+                    Utils.NativeMethods.ShowWindow(windowHandle, Utils.NativeMethods.SW_SHOW);
+                }
+
+                // 尝试多种方法将窗口带到前台
+                bool foregroundResult = Utils.NativeMethods.SetForegroundWindow(windowHandle);
+                Utils.NativeMethods.BringWindowToTop(windowHandle);
+
+                // 如果SetForegroundWindow失败，尝试闪烁窗口提醒用户
+                if (!foregroundResult)
+                {
+                    Debug.WriteLine("SetForegroundWindow失败，尝试闪烁窗口");
+                    Utils.NativeMethods.FlashWindow(windowHandle, true);
+                }
+
+                Debug.WriteLine($"已尝试激活窗口: {appName}, 最小化状态: {isIconic}, SetForegroundWindow结果: {foregroundResult}");
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"激活窗口时发生异常: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 查找指定进程ID的所有窗口句柄
+        /// </summary>
+        /// <param name="processId">进程ID</param>
+        /// <returns>窗口句柄列表</returns>
+        private List<IntPtr> FindWindowsForProcess(int processId)
+        {
+            List<IntPtr> result = new List<IntPtr>();
+
+            Utils.NativeMethods.EnumWindows((hWnd, lParam) =>
+            {
+                int windowProcessId;
+                Utils.NativeMethods.GetWindowThreadProcessId(hWnd, out windowProcessId);
+
+                if (windowProcessId == processId)
+                {
+                    // 获取窗口类名和标题，用于调试
+                    StringBuilder className = new StringBuilder(256);
+                    StringBuilder windowText = new StringBuilder(256);
+                    Utils.NativeMethods.GetClassName(hWnd, className, className.Capacity);
+                    Utils.NativeMethods.GetWindowText(hWnd, windowText, windowText.Capacity);
+
+                    Debug.WriteLine($"找到进程 {processId} 的窗口: 句柄={hWnd}, 类名={className}, 标题={windowText}, 可见={Utils.NativeMethods.IsWindowVisible(hWnd)}");
+
+                    result.Add(hWnd);
+                }
+
+                return true; // 继续枚举
+            }, IntPtr.Zero);
+
+            return result;
         }
 
         /// <summary>
@@ -327,6 +503,7 @@ namespace TodoOverlayApp.ViewModels
                 Model.SelectedApp.TodoItems.Add(new TodoItem { Content = "新待办项", IsCompleted = false });
                 Model.SelectedApp.IsExpanded = true;
             }
+            Model.SaveToFileAsync().ConfigureAwait(false);
         }
 
         // 添加新的方法来处理子待办项
@@ -340,9 +517,14 @@ namespace TodoOverlayApp.ViewModels
             {
                 parentItem.SubItems?.Add(new TodoItem { Content = "新子待办项", IsCompleted = false });
                 parentItem.IsExpanded = true;
+                Model.SaveToFileAsync().ConfigureAwait(false);
             }
         }
 
+        /// <summary>
+        /// 删除待办项（包括子待办项）
+        /// </summary>
+        /// <param name="parameter"></param>
         private void DeleteTodoItem(object? parameter)
         {
             if (parameter is TodoItem item)

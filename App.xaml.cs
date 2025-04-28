@@ -11,16 +11,13 @@ namespace TodoOverlayApp;
 public partial class App : Application
 {
     // 全局单例 ViewModel  
-    private static MainWindowViewModel _mainViewModel;
+    private static MainWindowViewModel? _mainViewModel;
 
-    public static MainWindowViewModel MainViewModel
+    public static MainWindowViewModel? MainViewModel
     {
         get
         {
-            if (_mainViewModel == null)
-            {
-                _mainViewModel = Current.Resources["MainViewModel"] as MainWindowViewModel;
-            }
+            _mainViewModel ??= Current.Resources["MainViewModel"] as MainWindowViewModel;
             return _mainViewModel;
         }
     }

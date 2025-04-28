@@ -81,6 +81,12 @@
                                 CommandParameter="{Binding}"
                                 Style="{StaticResource ButtonIcon}"
                                 ToolTip="删除软件及所有待办项" />
+                            <Button
+                                hc:IconElement.Geometry="{StaticResource UpGeometry}"
+                                Command="{Binding DataContext.ForceLaunchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                Style="{StaticResource ButtonIcon}"
+                                ToolTip="强制唤起该软件" />
 
 
                         </StackPanel>
