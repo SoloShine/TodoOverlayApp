@@ -12,9 +12,9 @@
     mc:Ignorable="d">
     <Window.Resources>
         <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0,0,0,10" />
         </Style>
     </Window.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -32,190 +32,212 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- 应用主题部分 -->
-            <TextBlock 
-                Grid.Row="0" 
-                Text="应用主题" 
-                Style="{StaticResource SectionHeaderStyle}"/>
+            <!--  应用主题部分  -->
+            <TextBlock
+                Grid.Row="0"
+                Style="{StaticResource SectionHeaderStyle}"
+                Text="应用主题" />
 
             <StackPanel Grid.Row="1" Margin="0,0,0,20">
-                <TextBlock Text="选择主题：" Margin="0,0,0,5"/>
-                <ComboBox x:Name="ThemeComboBox" SelectedIndex="0" SelectionChanged="ThemeComboBox_SelectionChanged">
-                    <ComboBoxItem Content="浅色主题"/>
-                    <ComboBoxItem Content="深色主题"/>
+                <TextBlock Margin="0,0,0,5" Text="选择主题：" />
+                <ComboBox
+                    x:Name="ThemeComboBox"
+                    SelectedIndex="0"
+                    SelectionChanged="ThemeComboBox_SelectionChanged">
+                    <ComboBoxItem Content="浅色主题" />
+                    <ComboBoxItem Content="深色主题" />
                 </ComboBox>
             </StackPanel>
 
-            <!-- 主题颜色部分 -->
-            <TextBlock 
-                Grid.Row="2" 
-                Text="主题颜色" 
-                Style="{StaticResource SectionHeaderStyle}"/>
+            <!--  主题颜色部分  -->
+            <TextBlock
+                Grid.Row="2"
+                Style="{StaticResource SectionHeaderStyle}"
+                Text="主题颜色" />
 
-            <WrapPanel Grid.Row="3" x:Name="ColorsPanel" Margin="0,0,0,20">
-                <!-- 预定义的颜色选择器 -->
-                <RadioButton 
-                    Style="{StaticResource RadioButtonIcon}" 
-                    Foreground="#2196F3"
+            <WrapPanel
+                x:Name="ColorsPanel"
+                Grid.Row="3"
+                Margin="0,0,0,20">
+                <!--  预定义的颜色选择器  -->
+                <RadioButton
+                    Margin="5"
                     Background="#2196F3"
                     BorderBrush="#2196F3"
-                    Margin="5"
+                    Checked="ColorRadioButton_Checked"
+                    Foreground="#2196F3"
                     GroupName="ThemeColors"
-                    Tag="#2196F3"
-                    Checked="ColorRadioButton_Checked"/>
-                <RadioButton 
-                    Style="{StaticResource RadioButtonIcon}" 
-                    Foreground="#4CAF50"
+                    Style="{StaticResource RadioButtonIcon}"
+                    Tag="#2196F3" />
+                <RadioButton
+                    Margin="5"
                     Background="#4CAF50"
                     BorderBrush="#4CAF50"
-                    Margin="5"
+                    Checked="ColorRadioButton_Checked"
+                    Foreground="#4CAF50"
                     GroupName="ThemeColors"
-                    Tag="#4CAF50"
-                    Checked="ColorRadioButton_Checked"/>
-                <RadioButton 
-                    Style="{StaticResource RadioButtonIcon}" 
-                    Foreground="#FF5722"
+                    Style="{StaticResource RadioButtonIcon}"
+                    Tag="#4CAF50" />
+                <RadioButton
+                    Margin="5"
                     Background="#FF5722"
                     BorderBrush="#FF5722"
-                    Margin="5"
+                    Checked="ColorRadioButton_Checked"
+                    Foreground="#FF5722"
                     GroupName="ThemeColors"
-                    Tag="#FF5722"
-                    Checked="ColorRadioButton_Checked"/>
-                <RadioButton 
-                    Style="{StaticResource RadioButtonIcon}" 
-                    Foreground="#9C27B0"
+                    Style="{StaticResource RadioButtonIcon}"
+                    Tag="#FF5722" />
+                <RadioButton
+                    Margin="5"
                     Background="#9C27B0"
                     BorderBrush="#9C27B0"
-                    Margin="5"
+                    Checked="ColorRadioButton_Checked"
+                    Foreground="#9C27B0"
                     GroupName="ThemeColors"
-                    Tag="#9C27B0"
-                    Checked="ColorRadioButton_Checked"/>
-                <RadioButton 
-                    Style="{StaticResource RadioButtonIcon}" 
-                    Foreground="#FF9800"
+                    Style="{StaticResource RadioButtonIcon}"
+                    Tag="#9C27B0" />
+                <RadioButton
+                    Margin="5"
                     Background="#FF9800"
                     BorderBrush="#FF9800"
-                    Margin="5"
+                    Checked="ColorRadioButton_Checked"
+                    Foreground="#FF9800"
                     GroupName="ThemeColors"
-                    Tag="#FF9800"
-                    Checked="ColorRadioButton_Checked"/>
+                    Style="{StaticResource RadioButtonIcon}"
+                    Tag="#FF9800" />
+                <!--  添加主题颜色的自定义按钮  -->
+                <Button
+                    x:Name="CustomThemeColorButton"
+                    Margin="5"
+                    Padding="5,3"
+                    Click="CustomThemeColorButton_Click"
+                    Content="自定义..." />
             </WrapPanel>
 
-            <!-- 悬浮窗设置部分 -->
-            <TextBlock 
-                Grid.Row="4" 
-                Text="悬浮窗设置" 
-                Style="{StaticResource SectionHeaderStyle}"/>
+            <!--  悬浮窗设置部分  -->
+            <TextBlock
+                Grid.Row="4"
+                Style="{StaticResource SectionHeaderStyle}"
+                Text="悬浮窗设置" />
 
-            <!-- 悬浮窗背景颜色 -->
+            <!--  悬浮窗背景颜色  -->
             <StackPanel Grid.Row="5" Margin="0,0,0,10">
-                <TextBlock Text="背景颜色：" Margin="0,0,0,5"/>
+                <TextBlock Margin="0,0,0,5" Text="背景颜色：" />
                 <WrapPanel x:Name="OverlayColorsPanel">
-                    <RadioButton 
-                        Style="{StaticResource RadioButtonIcon}" 
+                    <RadioButton
+                        Margin="5"
                         Background="#D3D3D3"
                         BorderBrush="#D3D3D3"
+                        Checked="OverlayColorRadioButton_Checked"
                         Foreground="#D3D3D3"
-                        Margin="5"
                         GroupName="OverlayColors"
-                        Tag="#D3D3D3"
-                        Checked="OverlayColorRadioButton_Checked"/>
-                    <RadioButton 
-                        Style="{StaticResource RadioButtonIcon}" 
+                        Style="{StaticResource RadioButtonIcon}"
+                        Tag="#D3D3D3" />
+                    <RadioButton
+                        Margin="5"
                         Background="#FFFFFF"
                         BorderBrush="#CCCCCC"
+                        Checked="OverlayColorRadioButton_Checked"
                         Foreground="#FFFFFF"
-                        Margin="5"
                         GroupName="OverlayColors"
-                        Tag="#FFFFFF"
-                        Checked="OverlayColorRadioButton_Checked"/>
-                    <RadioButton 
-                        Style="{StaticResource RadioButtonIcon}" 
+                        Style="{StaticResource RadioButtonIcon}"
+                        Tag="#FFFFFF" />
+                    <RadioButton
+                        Margin="5"
                         Background="#F0F0F0"
                         BorderBrush="#F0F0F0"
+                        Checked="OverlayColorRadioButton_Checked"
                         Foreground="#F0F0F0"
-                        Margin="5"
                         GroupName="OverlayColors"
-                        Tag="#F0F0F0"
-                        Checked="OverlayColorRadioButton_Checked"/>
-                    <RadioButton 
-                        Style="{StaticResource RadioButtonIcon}" 
+                        Style="{StaticResource RadioButtonIcon}"
+                        Tag="#F0F0F0" />
+                    <RadioButton
+                        Margin="5"
                         Background="#E0E0E0"
                         BorderBrush="#E0E0E0"
+                        Checked="OverlayColorRadioButton_Checked"
                         Foreground="#E0E0E0"
-                        Margin="5"
                         GroupName="OverlayColors"
-                        Tag="#E0E0E0"
-                        Checked="OverlayColorRadioButton_Checked"/>
-                    <RadioButton 
-                        Style="{StaticResource RadioButtonIcon}" 
+                        Style="{StaticResource RadioButtonIcon}"
+                        Tag="#E0E0E0" />
+                    <RadioButton
+                        Margin="5"
                         Background="#000000"
                         BorderBrush="#000000"
+                        Checked="OverlayColorRadioButton_Checked"
                         Foreground="#000000"
-                        Margin="5"
                         GroupName="OverlayColors"
-                        Tag="#000000"
-                        Checked="OverlayColorRadioButton_Checked"/>
+                        Style="{StaticResource RadioButtonIcon}"
+                        Tag="#000000" />
+                    <Button
+                        x:Name="CustomColorButton"
+                        Margin="5"
+                        Padding="5,3"
+                        Click="CustomColorButton_Click"
+                        Content="自定义..." />
                 </WrapPanel>
             </StackPanel>
 
-            <!-- 悬浮窗不透明度 -->
+            <!--  悬浮窗不透明度  -->
             <StackPanel Grid.Row="6" Margin="0,10,0,20">
-                <TextBlock Text="不透明度：" Margin="0,0,0,5"/>
+                <TextBlock Margin="0,0,0,5" Text="不透明度：" />
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="60" />
                     </Grid.ColumnDefinitions>
-                    <Slider 
-                        x:Name="OpacitySlider" 
-                        Minimum="0.1" 
-                        Maximum="1.0" 
-                        Value="0.3" 
-                        TickFrequency="0.1"
+                    <Slider
+                        x:Name="OpacitySlider"
                         IsSnapToTickEnabled="True"
-                        ValueChanged="OpacitySlider_ValueChanged"/>
-                    <TextBlock 
-                        Grid.Column="1" 
-                        Text="{Binding ElementName=OpacitySlider, Path=Value, StringFormat={}{0:P0}}" 
-                        VerticalAlignment="Center" 
-                        HorizontalAlignment="Right"/>
+                        Maximum="1.0"
+                        Minimum="0.1"
+                        TickFrequency="0.1"
+                        ValueChanged="OpacitySlider_ValueChanged"
+                        Value="0.3" />
+                    <TextBlock
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Text="{Binding ElementName=OpacitySlider, Path=Value, StringFormat={}{0:P0}}" />
                 </Grid>
             </StackPanel>
 
-            <!-- 预览部分 -->
-            <TextBlock 
-                Grid.Row="7" 
-                Text="预览" 
-                Style="{StaticResource SectionHeaderStyle}"/>
+            <!--  预览部分  -->
+            <TextBlock
+                Grid.Row="7"
+                Style="{StaticResource SectionHeaderStyle}"
+                Text="预览" />
 
-            <Border 
-                Grid.Row="8" 
+            <Border
                 x:Name="PreviewBorder"
-                Height="100" 
-                CornerRadius="10" 
+                Grid.Row="8"
+                Height="100"
+                Margin="0,0,0,20"
                 Background="LightGray"
-                Opacity="0.3"
                 BorderBrush="#CCCCCC"
                 BorderThickness="1"
-                Margin="0,0,0,20">
+                CornerRadius="10"
+                Opacity="0.3">
                 <DockPanel>
-                    <Label DockPanel.Dock="Top" Content="待办事项预览" HorizontalAlignment="Left"/>
-                    <TextBlock 
+                    <Label
+                        HorizontalAlignment="Left"
+                        Content="待办事项预览"
+                        DockPanel.Dock="Top" />
+                    <TextBlock
+                        Margin="20,5"
+                        VerticalAlignment="Center"
                         DockPanel.Dock="Bottom"
-                        Text="● 这是一个示例待办项" 
-                        Margin="20,5" 
-                        VerticalAlignment="Center"/>
+                        Text="● 这是一个示例待办项" />
                 </DockPanel>
             </Border>
 
-            <!-- 确定按钮 -->
-            <Button 
-                Grid.Row="9" 
-                Content="确定" 
-                HorizontalAlignment="Right" 
-                Width="80" 
-                Click="OkButton_Click"/>
+            <!--  确定按钮  -->
+            <Button
+                Grid.Row="9"
+                Width="80"
+                HorizontalAlignment="Right"
+                Click="OkButton_Click"
+                Content="确定" />
         </Grid>
     </ScrollViewer>
 </Window>
