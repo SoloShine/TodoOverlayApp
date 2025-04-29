@@ -82,7 +82,7 @@ namespace TodoOverlayApp.ViewModels
             AddSubTodoItemCommand = new RelayCommand(AddSubTodoItem);
             DeleteSubTodoItemCommand = new RelayCommand(DeleteTodoItem); // 复用现有的删除方法
             ToggleIsInjectedCommand = new RelayCommand(ToggleIsInjected);
-            //周期遍历model中AppAssociations，当AppAssociation中IsInjected为true的时候，尝试自动创建OverlayWindow
+            //周期遍历model中AppAssociations，当AppAssociation中IsInjected为true的时候，尝试自动注入OverlayWindow
             autoInjectTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(1)
@@ -100,7 +100,7 @@ namespace TodoOverlayApp.ViewModels
             var newApp = new AppAssociation();
             Model.AppAssociations.Add(newApp);
             //弹出一个二选一选项
-            var result = MessageBox.Show("是否为当前运行软件添加待办事项？", "选择操作", MessageBoxButton.YesNo);
+            var result = MessageBox.Show("是否为当前运行软件添加待办事项？否为打开资源管理器手动选择", "选择操作", MessageBoxButton.YesNo);
             if (result == MessageBoxResult.Yes)
             {
                 // 执行与当前运行软件相关的逻辑
@@ -121,6 +121,7 @@ namespace TodoOverlayApp.ViewModels
         {
             if (parameter is AppAssociation app)
             {
+                if (app.IsNonApp) return;
                 Model.AppAssociations.Remove(app);
             }
         }
@@ -269,7 +270,7 @@ namespace TodoOverlayApp.ViewModels
 
             foreach (var app in Model.AppAssociations)
             {
-                if (!app.IsInjected)
+                if (!app.IsInjected || app.IsNonApp)
                     continue;
 
                 if (string.IsNullOrEmpty(app.AppPath) || !File.Exists(app.AppPath))
@@ -359,6 +360,7 @@ namespace TodoOverlayApp.ViewModels
         {
             if (parameter is AppAssociation app)
             {
+                if(app.IsNonApp) return;
                 if (!File.Exists(app.AppPath))
                 {
                     MessageBox.Show("关联软件未安装，请检查路径。");
@@ -500,6 +502,7 @@ namespace TodoOverlayApp.ViewModels
         {
             if (parameter is AppAssociation app)
             {
+                if (app.IsNonApp) return;
                 if (File.Exists(app.AppPath))
                 {
                     // 获取目标进程名
@@ -692,7 +695,7 @@ namespace TodoOverlayApp.ViewModels
         {
             if (parameter is AppAssociation app)
             {
-                app.TodoItems.Add(new TodoItem { Content = "新待办项", IsCompleted = false, ParentId=app.Id });
+                app.TodoItems.Add(new TodoItem { Content = "新待办项", IsCompleted = false, ParentId = app.Id });
                 app.IsExpanded = true;
             }
             Model.SaveToFileAsync().ConfigureAwait(false);

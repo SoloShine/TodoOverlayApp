@@ -20,7 +20,7 @@ namespace TodoOverlayApp.Models
         /// <summary>
         /// ¸¸½Úµãid
         /// </summary>
-        public string ParentId { get; set; }
+        public string? ParentId { get; set; }
 
 
         public string Content
@@ -68,6 +68,20 @@ namespace TodoOverlayApp.Models
             {
                 _subItems = value;
                 OnPropertyChanged(nameof(SubItems));
+            }
+        }
+
+        private string? description = "";
+        /// <summary>
+        /// ÃèÊö
+        /// </summary>
+        public string? Description
+        {
+            get => description;
+            set
+            {
+                description = value;
+                OnPropertyChanged(nameof(Description));
             }
         }
 

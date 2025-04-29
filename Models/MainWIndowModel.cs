@@ -17,6 +17,31 @@ namespace TodoOverlayApp.Models
         public MainWindowModel()
         {
             AppAssociations.CollectionChanged += OnTodoItemsChanged;
+            // 默认添加一个普通的待办项集合、一个软件集合
+            //获取notepad.exe的路径
+            var notepadPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "notepad.exe");
+            AppAssociations.Add(new AppAssociation()
+            {
+                IsNonApp = true,
+                AppName = "普通待办",
+                AppPath = string.Empty,
+                TodoItems = [
+                    new() { Content = "普通待办项1", IsCompleted = false, ParentId = string.Empty }, 
+                    new() { Content = "普通待办项2", IsCompleted = false, ParentId = string.Empty },
+                ]
+            });
+            AppAssociations.Add(new AppAssociation()
+            {
+                IsNonApp = false,
+                AppName = "记事本",
+                AppPath = notepadPath,
+                IsInjected = true,
+                TodoItems =  [
+                    new() { Content = "软件待办项1", IsCompleted = false, ParentId = string.Empty },
+                    new() { Content = "软件待办项2", IsCompleted = false, ParentId = string.Empty },
+                ]
+            });
+
         }
 
         #region INotifyPropertyChanged 实现

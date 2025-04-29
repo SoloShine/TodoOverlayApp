@@ -60,6 +60,19 @@ namespace TodoOverlayApp.Models
             }
         }
 
+        private bool isNonApp = false;
+        /// <summary>
+        /// 是否非软件待办，为true时，当作普通待办的集合特别处理，不需要注入也不需要其他处理
+        /// </summary>
+        public bool IsNonApp
+        {
+            get => isNonApp;
+            set
+            {
+                isNonApp = value;
+                OnPropertyChanged(nameof(IsNonApp));
+            }
+        }
 
         private ObservableCollection<TodoItem> todoItems = [];
         /// <summary>
@@ -86,6 +99,20 @@ namespace TodoOverlayApp.Models
             {
                 isExpanded = value;
                 OnPropertyChanged(nameof(IsExpanded));
+            }
+        }
+
+        private string? description = string.Empty;
+        /// <summary>
+        /// 描述
+        /// </summary>
+        public string? Description
+        {
+            get => description;
+            set
+            {
+                description = value;
+                OnPropertyChanged(nameof(Description));
             }
         }
 
