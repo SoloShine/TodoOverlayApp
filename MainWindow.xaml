@@ -26,6 +26,7 @@
             </MenuItem>
             <MenuItem Header="设置">
                 <MenuItem Click="ThemeMenuItem_Click" Header="主题配置" />
+                <MenuItem Command="{Binding ResetAppCommand}" Header="重置应用" />
             </MenuItem>
             <MenuItem Header="帮助">
                 <MenuItem Click="AboutMenuItem_Click" Header="关于" />

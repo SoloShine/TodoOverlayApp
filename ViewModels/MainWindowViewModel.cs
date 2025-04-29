@@ -58,6 +58,8 @@ namespace TodoOverlayApp.ViewModels
 
         public ICommand ToggleIsInjectedCommand { get; }
 
+        public ICommand ResetAppCommand { get; }
+
         private DispatcherTimer autoInjectTimer;
         public MainWindowViewModel()
         {
@@ -82,6 +84,7 @@ namespace TodoOverlayApp.ViewModels
             AddSubTodoItemCommand = new RelayCommand(AddSubTodoItem);
             DeleteSubTodoItemCommand = new RelayCommand(DeleteTodoItem); // 复用现有的删除方法
             ToggleIsInjectedCommand = new RelayCommand(ToggleIsInjected);
+            ResetAppCommand = new RelayCommand(ResetApp);
             //周期遍历model中AppAssociations，当AppAssociation中IsInjected为true的时候，尝试自动注入OverlayWindow
             autoInjectTimer = new DispatcherTimer
             {
@@ -89,6 +92,33 @@ namespace TodoOverlayApp.ViewModels
             };
             autoInjectTimer.Tick += AutoInjectOverlays;
             autoInjectTimer.Start();
+        }
+
+        /// <summary>
+        /// 重置应用数据，创建新的MainWindowModel实例并清理现有资源
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void ResetApp(object? parameter)
+        {
+            var result = MessageBox.Show(
+                "确定要重置应用吗？这将清除所有待办项和应用关联。",
+                "确认重置",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                // 先清理现有资源
+                Cleanup();
+
+                // 创建新的MainWindowModel实例并赋值
+                Model = new MainWindowModel();
+
+                // 保存新模型到文件
+                Model.SaveToFileAsync().ConfigureAwait(false);
+
+                MessageBox.Show("应用已重置成功！", "重置完成", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         /// <summary>
