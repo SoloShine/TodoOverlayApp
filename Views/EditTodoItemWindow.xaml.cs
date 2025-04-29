@@ -3,7 +3,7 @@ using TodoOverlayApp.Models;
 
 namespace TodoOverlayApp.Views
 {
-    public partial class EditTodoItemWindow : Window
+    public partial class EditTodoItemWindow : HandyControl.Controls.Window
     {
         public TodoItem Todo { get; private set; }
 

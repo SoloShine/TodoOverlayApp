@@ -8,7 +8,7 @@ using TodoOverlayApp.Utils;
 
 namespace TodoOverlayApp.Views
 {
-    public partial class ThemeSettingsWindow : Window
+    public partial class ThemeSettingsWindow : HandyControl.Controls.Window
     {
         private MainWindowModel _model;
         private RadioButton? _customColorRadioButton = null;

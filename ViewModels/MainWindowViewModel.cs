@@ -206,6 +206,11 @@ namespace TodoOverlayApp.ViewModels
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        /// <summary>
+        /// 自动注入悬浮窗到当前前台窗口
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void AutoInjectOverlays(object? sender, EventArgs e)
         {
             // 获取当前前台窗口句柄
@@ -224,9 +229,9 @@ namespace TodoOverlayApp.ViewModels
                 if (processes.Length == 0)
                 {
                     // 如果进程未运行且之前已经创建了 overlay，则关闭它
-                    if (_overlayWindows.ContainsKey(app.AppPath))
+                    if (_overlayWindows.TryGetValue(app.AppPath, out OverlayWindow? value))
                     {
-                        _overlayWindows[app.AppPath].Close();
+                        value.Close();
                         _overlayWindows.Remove(app.AppPath);
                     }
                     continue;
@@ -237,73 +242,25 @@ namespace TodoOverlayApp.ViewModels
                 if (!Utils.NativeMethods.IsWindow(targetWindowHandle))
                     continue;
 
-                // 若目标窗口为前台且尚未创建 overlay，则创建 overlay
-                if (foregroundHandle == targetWindowHandle)
-                {
-                    if (!_overlayWindows.ContainsKey(app.AppPath))
-                    {
-                        Debug.WriteLine("窗口需要创建");
-                        var overlayWindow = new OverlayWindow(app.TodoItems)
-                        {
-                            Topmost = false
-                        };
-                        overlayWindow.ApplyOverlaySettings();
-                        overlayWindow.Show();
-
-                        // 建立父子关系（使 overlay 显示在目标窗口上方）
-                        _ = Utils.NativeMethods.SetWindowLong(
-                            overlayWindow.GetHandle(),
-                            Utils.NativeMethods.GWL_HWNDPARENT,
-                            targetWindowHandle.ToInt32());
-
-                        // 定时器持续更新 overlay 的位置
-                        var timer = new DispatcherTimer
-                        {
-                            Interval = TimeSpan.FromMilliseconds(100)
-                        };
-                        timer.Tick += (s, args) =>
-                        {
-                            UpdateOverlayPosition(overlayWindow, targetWindowHandle);
-                            // 获取目标窗口上方的窗口句柄
-                            IntPtr hAbove = Utils.NativeMethods.GetWindow(targetWindowHandle, Utils.NativeMethods.GW_HWNDPREV);
-                            if (hAbove == IntPtr.Zero)
-                                hAbove = targetWindowHandle;
-                            Utils.NativeMethods.SetWindowPos(
-                                overlayWindow.GetHandle(),
-                                hAbove,
-                                0, 0, 0, 0,
-                                Utils.NativeMethods.SWP_NOMOVE | Utils.NativeMethods.SWP_NOSIZE | Utils.NativeMethods.SWP_NOACTIVATE);
-                        };
-                        timer.Start();
-                        overlayWindow.Closed += (s, args) => timer.Stop();
-
-                        _overlayWindows[app.AppPath] = overlayWindow;
-                    }
-                }
-                else
-                {
-                    // 如果目标不在前台，且已存在 overlay，则关闭 overlay
-                    //if (_overlayWindows.ContainsKey(app.AppPath))
-                    //{
-                    //    Debug.WriteLine("窗口需要删除");
-                    //    _overlayWindows[app.AppPath].Close();
-                    //    _overlayWindows.Remove(app.AppPath);
-                    //}
-                }
+                // 调用公共方法处理悬浮窗逻辑
+                HandleOverlayWindow(app, targetWindowHandle, foregroundHandle);
             }
         }
-
 
         /// <summary>
         /// 切换软件待办项的注入状态
         /// </summary>
         /// <param name="parameter"></param>
         /// <exception cref="NotImplementedException"></exception>
+        /// <summary>
+        /// 切换软件待办项的注入状态
+        /// </summary>
+        /// <param name="parameter"></param>
         private void ToggleIsInjected(object? parameter)
         {
             if (parameter is AppAssociation app)
             {
-                if(app.IsNonApp) return;
+                if (app.IsNonApp) return;
                 if (!File.Exists(app.AppPath))
                 {
                     MessageBox.Show("关联软件未安装，请检查路径。");
@@ -323,76 +280,82 @@ namespace TodoOverlayApp.ViewModels
                     return;
                 }
 
-                var appKey = app.AppPath;
-                //由于绑定了属性，这里已经发生了变化，所以需要反着判定
-                if (app.IsInjected)
+                // 调用公共方法处理悬浮窗逻辑
+                HandleOverlayWindow(app, targetWindowHandle, Utils.NativeMethods.GetForegroundWindow());
+
+                // 保存配置
+                Model.SaveToFileAsync().ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// 处理悬浮窗的创建、更新和关闭逻辑。
+        /// </summary>
+        /// <param name="app">目标应用</param>
+        /// <param name="targetWindowHandle">目标窗口句柄</param>
+        /// <param name="foregroundHandle">当前前台窗口句柄</param>
+        private void HandleOverlayWindow(AppAssociation app, IntPtr targetWindowHandle, IntPtr foregroundHandle)
+        {
+            var appKey = app.AppPath;
+            if (string.IsNullOrEmpty(appKey)) return;
+            // 若目标窗口为前台且尚未创建 overlay，则创建 overlay
+            if (foregroundHandle == targetWindowHandle)
+            {
+                if (!_overlayWindows.ContainsKey(appKey))
                 {
-                    // 启动悬浮窗
-                    if (!_overlayWindows.ContainsKey(appKey))
+                    Debug.WriteLine("窗口需要创建");
+                    var overlayWindow = new OverlayWindow(app.TodoItems)
                     {
-                        // 创建悬浮窗
-                        var overlayWindow = new OverlayWindow(app.TodoItems)
-                        {
-                            // 重要：不设置Topmost属性，而是使用窗口层次控制
-                            Topmost = false
-                        };
-                        overlayWindow.ApplyOverlaySettings();
+                        Topmost = false
+                    };
+                    overlayWindow.ApplyOverlaySettings();
+                    overlayWindow.Show();
 
-                        // 获取目标窗口的信息
-                        IntPtr targetOwner = Utils.NativeMethods.GetWindow(targetWindowHandle, Utils.NativeMethods.GW_OWNER);
+                    // 建立父子关系（使 overlay 显示在目标窗口上方）
+                    _ = Utils.NativeMethods.SetWindowLong(
+                        overlayWindow.GetHandle(),
+                        Utils.NativeMethods.GWL_HWNDPARENT,
+                        targetWindowHandle.ToInt32());
 
-                        // 显示窗口但不激活
-                        overlayWindow.Show();
-
-                        // 设置悬浮窗为目标窗口的子窗口（在Z-order中）
-                        _ = Utils.NativeMethods.SetWindowLong(
+                    // 定时器持续更新 overlay 的位置
+                    var timer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(100)
+                    };
+                    timer.Tick += (s, args) =>
+                    {
+                        UpdateOverlayPosition(overlayWindow, targetWindowHandle);
+                        // 获取目标窗口上方的窗口句柄
+                        IntPtr hAbove = Utils.NativeMethods.GetWindow(targetWindowHandle, Utils.NativeMethods.GW_HWNDPREV);
+                        if (hAbove == IntPtr.Zero)
+                            hAbove = targetWindowHandle;
+                        Utils.NativeMethods.SetWindowPos(
                             overlayWindow.GetHandle(),
-                            Utils.NativeMethods.GWL_HWNDPARENT,
-                            targetWindowHandle.ToInt32());
+                            hAbove,
+                            0, 0, 0, 0,
+                            Utils.NativeMethods.SWP_NOMOVE | Utils.NativeMethods.SWP_NOSIZE | Utils.NativeMethods.SWP_NOACTIVATE);
+                    };
+                    timer.Start();
+                    overlayWindow.Closed += (s, args) => timer.Stop();
 
-                        // 使用定时器更新悬浮窗位置
-                        var timer = new System.Windows.Threading.DispatcherTimer
-                        {
-                            Interval = TimeSpan.FromMilliseconds(100)
-                        };
-                        timer.Tick += (s, e) =>
-                        {
-                            // 更新位置
-                            UpdateOverlayPosition(overlayWindow, targetWindowHandle);
-
-                            // 获取目标窗口上方的窗口句柄
-                            IntPtr hAbove = Utils.NativeMethods.GetWindow(targetWindowHandle, Utils.NativeMethods.GW_HWNDPREV);
-                            if (hAbove == IntPtr.Zero)
-                            {
-                                // 没有上方的窗口时，直接使用目标窗口句柄
-                                hAbove = targetWindowHandle;
-                            }
-
-                            // 将悬浮窗置于 hAbove 前面（显示在目标窗口上方，但不全局置顶）
-                            Utils.NativeMethods.SetWindowPos(
-                                overlayWindow.GetHandle(),
-                                hAbove,
-                                0, 0, 0, 0,
-                                Utils.NativeMethods.SWP_NOMOVE | Utils.NativeMethods.SWP_NOSIZE | Utils.NativeMethods.SWP_NOACTIVATE);
-
-                        };
-                        timer.Start();
-
-                        overlayWindow.Closed += (s, e) => timer.Stop();
-                        _overlayWindows[appKey] = overlayWindow;
-                    }
+                    _overlayWindows[appKey] = overlayWindow;
                 }
-                else
+            }
+            else
+            {
+                // 如果目标最小化或关闭，则关闭 overlay，避免冗余窗口
+                if (Utils.NativeMethods.IsIconic(targetWindowHandle) || !Utils.NativeMethods.IsWindowVisible(targetWindowHandle))
                 {
-                    // 关闭悬浮窗
-                    if (_overlayWindows.ContainsKey(app.AppPath))
+                    if (_overlayWindows.TryGetValue(appKey, out OverlayWindow? value))
                     {
-                        _overlayWindows[app.AppPath].Close();
-                        _overlayWindows.Remove(app.AppPath);
+                        Debug.WriteLine("窗口需要删除");
+                        value.Close();
+                        _overlayWindows.Remove(appKey);
                     }
                 }
             }
         }
+
 
         /// <summary>
         /// 更新悬浮窗的位置，使其始终位于目标窗口的下方。

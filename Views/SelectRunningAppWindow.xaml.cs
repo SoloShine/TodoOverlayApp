@@ -6,7 +6,7 @@ using System.Windows;
 
 namespace TodoOverlayApp.Views
 {
-    public partial class SelectRunningAppWindow : Window
+    public partial class SelectRunningAppWindow : HandyControl.Controls.Window
     {
         public Process? SelectedProcess { get; private set; }
         private List<Process> allProcesses = new();

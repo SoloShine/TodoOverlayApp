@@ -1,4 +1,4 @@
-<Window
+<hc:Window
     x:Class="TodoOverlayApp.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,7 +9,7 @@
     Title="待办软件配置"
     Width="800"
     Height="450"
-    Background="{DynamicResource BackgroundBrush}"
+    Background="{DynamicResource RegionBrush}"
     WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
@@ -51,4 +51,4 @@
             </StackPanel>-->
         </Grid>
     </Grid>
-</Window>
+</hc:Window>

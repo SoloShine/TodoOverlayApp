@@ -8,7 +8,7 @@ using TodoOverlayApp.ViewModels;
 
 namespace TodoOverlayApp.Views
 {
-    public partial class EditAppWindow : Window
+    public partial class EditAppWindow : HandyControl.Controls.Window
     {
         public AppAssociation App { get; private set; }
 
