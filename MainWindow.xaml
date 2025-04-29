@@ -41,14 +41,14 @@
             </Grid.ColumnDefinitions>
             <!--  使用新的UserControl替换之前的TreeView  -->
             <views:TodoTreeView />
-            <StackPanel Grid.Column="1">
+            <!--<StackPanel Grid.Column="1">
                 <Button
                     Margin="10"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     Command="{Binding AddAppCommand}"
                     Content="添加关联软件" />
-            </StackPanel>
+            </StackPanel>-->
         </Grid>
     </Grid>
 </Window>

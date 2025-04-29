@@ -1,0 +1,66 @@
+{
+  "AppAssociations": [
+    {
+      "Id": "ba6b8d9d-cbab-4f64-9d4d-12c235a61f79",
+      "AppPath": "",
+      "AppName": "\u666E\u901A\u5F85\u529E",
+      "IsInjected": false,
+      "IsNonApp": true,
+      "TodoItems": [
+        {
+          "Id": "952b5b20-4fc5-460c-9263-0a760f933a03",
+          "ParentId": "",
+          "Content": "\u666E\u901A\u5F85\u529E\u98791",
+          "IsCompleted": false,
+          "IsExpanded": false,
+          "SubItems": [],
+          "Description": ""
+        },
+        {
+          "Id": "8a4adffb-ee20-485f-acf3-758723d73d82",
+          "ParentId": "",
+          "Content": "\u666E\u901A\u5F85\u529E\u98792",
+          "IsCompleted": false,
+          "IsExpanded": false,
+          "SubItems": [],
+          "Description": ""
+        }
+      ],
+      "IsExpanded": false,
+      "Description": ""
+    },
+    {
+      "Id": "5ab5081f-7326-4069-a209-cd7718fc846d",
+      "AppPath": "C:\\WINDOWS\\system32\\notepad.exe",
+      "AppName": "\u8BB0\u4E8B\u672C",
+      "IsInjected": true,
+      "IsNonApp": false,
+      "TodoItems": [
+        {
+          "Id": "70d6d9ee-f3e1-4be7-a66b-2f7d1187ff24",
+          "ParentId": "",
+          "Content": "\u8F6F\u4EF6\u5F85\u529E\u98791",
+          "IsCompleted": false,
+          "IsExpanded": false,
+          "SubItems": [],
+          "Description": ""
+        },
+        {
+          "Id": "cab90a3c-c5ca-4f50-983a-e1a5df895887",
+          "ParentId": "",
+          "Content": "\u8F6F\u4EF6\u5F85\u529E\u98792",
+          "IsCompleted": false,
+          "IsExpanded": false,
+          "SubItems": [],
+          "Description": ""
+        }
+      ],
+      "IsExpanded": false,
+      "Description": ""
+    }
+  ],
+  "ThemeType": "Default",
+  "ThemeColor": "#2196F3",
+  "OverlayBackground": "#D3D3D3",
+  "OverlayOpacity": 0.3
+}

@@ -47,8 +47,8 @@ namespace TodoOverlayApp.ViewModels
 
         public ICommand AddAppCommand { get; }
         public ICommand RemoveAppCommand { get; }
-        public ICommand SelectAppCommand { get; }
-        public ICommand SelectRunningAppCommand { get; }
+        //public ICommand SelectAppCommand { get; }
+        //public ICommand SelectRunningAppCommand { get; }
         public ICommand ForceLaunchCommand { get; }
         public ICommand AddTodoItemCommand { get; }
         public ICommand DeleteTodoItemCommand { get; }
@@ -59,8 +59,9 @@ namespace TodoOverlayApp.ViewModels
         public ICommand ToggleIsInjectedCommand { get; }
 
         public ICommand ResetAppCommand { get; }
+        public ICommand EditAppCommand { get; }
 
-        private DispatcherTimer autoInjectTimer;
+        private readonly DispatcherTimer autoInjectTimer;
         public MainWindowViewModel()
         {
             // 尝试从文件加载配置，如果加载失败则创建新的模型
@@ -76,8 +77,8 @@ namespace TodoOverlayApp.ViewModels
 
             AddAppCommand = new RelayCommand(AddApp);
             RemoveAppCommand = new RelayCommand(RemoveApp);
-            SelectAppCommand = new RelayCommand(SelectApp);
-            SelectRunningAppCommand = new RelayCommand(SelectRunningApp);
+            //SelectAppCommand = new RelayCommand(SelectApp);
+            //SelectRunningAppCommand = new RelayCommand(SelectRunningApp);
             ForceLaunchCommand = new RelayCommand(ForceLaunch);
             AddTodoItemCommand = new RelayCommand(AddTodoItem);
             DeleteTodoItemCommand = new RelayCommand(DeleteTodoItem);
@@ -85,6 +86,7 @@ namespace TodoOverlayApp.ViewModels
             DeleteSubTodoItemCommand = new RelayCommand(DeleteTodoItem); // 复用现有的删除方法
             ToggleIsInjectedCommand = new RelayCommand(ToggleIsInjected);
             ResetAppCommand = new RelayCommand(ResetApp);
+            EditAppCommand = new RelayCommand(EditApp);
             //周期遍历model中AppAssociations，当AppAssociation中IsInjected为true的时候，尝试自动注入OverlayWindow
             autoInjectTimer = new DispatcherTimer
             {
@@ -134,12 +136,34 @@ namespace TodoOverlayApp.ViewModels
             if (result == MessageBoxResult.Yes)
             {
                 // 执行与当前运行软件相关的逻辑
-                SelectRunningApp(null);
+                AppAssociation.SelectRunningApp(newApp);
             }
             else if (result == MessageBoxResult.No)
             {
                 // 选择文件路径的逻辑
-                SelectApp(null);
+                AppAssociation.SelectApp(newApp);
+            }
+        }
+
+        /// <summary>
+        /// 编辑一个应用。弹出编辑窗口，如果用户点击确定则更新原始对象并保存配置到文件。
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void EditApp(object? parameter)
+        {
+            if (parameter is not AppAssociation app) return;
+
+            var editWindow = new EditAppWindow(app);
+            if (editWindow.ShowDialog() == true)
+            {
+                // 更新原始对象
+                app.AppName = editWindow.App.AppName;
+                app.AppPath = editWindow.App.AppPath;
+                app.IsNonApp = editWindow.App.IsNonApp;
+                app.Description = editWindow.App.Description;
+
+                // 保存配置到文件
+                Model.SaveToFileAsync().ConfigureAwait(false);
             }
         }
 
@@ -154,138 +178,6 @@ namespace TodoOverlayApp.ViewModels
                 if (app.IsNonApp) return;
                 Model.AppAssociations.Remove(app);
             }
-        }
-
-        /// <summary>
-        /// 选择一个应用，并将其路径设置为选中应用的AppPath。
-        /// </summary>
-        /// <param name="parameter"></param>
-        private void SelectApp(object? parameter)
-        {
-            if (parameter is not AppAssociation app) return;
-
-            var openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
-            {
-                app.AppPath = openFileDialog.FileName;
-            }
-        }
-
-        /// <summary>
-        /// 选择当前运行软件，并将其路径设置为选中应用的AppPath。
-        /// </summary>
-        /// <param name="parameter"></param>
-        private void SelectRunningApp(object? parameter)
-        {
-            var processes = Process.GetProcesses()
-                .Where(p => !string.IsNullOrEmpty(p.MainWindowTitle))
-                .ToList();
-
-            if (processes.Count == 0)
-            {
-                MessageBox.Show("当前没有可选择的运行中软件。");
-                return;
-            }
-
-            var selectWindow = new Window
-            {
-                Title = "选择当前运行软件"+"("+processes.Count+")",
-                Width = 300,
-                Height = 400,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                SizeToContent = SizeToContent.Height, // 根据内容调整高度
-                MaxHeight = 600 // 设置最大高度，避免窗口过大
-            };
-
-            // 主布局容器
-            var mainPanel = new DockPanel { LastChildFill = true };
-
-            // 搜索框放在顶部
-            var searchBox = new TextBox
-            {
-                Text = "搜索进程...",
-                Margin = new Thickness(5),
-                Padding = new Thickness(3)
-            };
-            DockPanel.SetDock(searchBox, Dock.Top);
-            mainPanel.Children.Add(searchBox);
-
-            // 选择按钮放在底部
-            var selectButton = new Button
-            {
-                Content = "选择",
-                Margin = new Thickness(5),
-                Padding = new Thickness(5, 3, 5, 3),
-                HorizontalAlignment = HorizontalAlignment.Right
-            };
-            DockPanel.SetDock(selectButton, Dock.Bottom);
-            mainPanel.Children.Add(selectButton);
-
-            // 列表框包装在ScrollViewer中以提供滚动功能
-            var listBox = new ListBox
-            {
-                Margin = new Thickness(5),
-                MinHeight = 200 // 确保有足够的高度显示多个条目
-            };
-            var scrollViewer = new ScrollViewer
-            {
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto, // 自动显示滚动条
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Content = listBox
-            };
-            mainPanel.Children.Add(scrollViewer); // 添加到主面板
-
-            void ChooseFunc()
-            {
-                if (listBox.SelectedIndex != -1)
-                {
-                    var process = processes[listBox.SelectedIndex];
-                    try
-                    {
-                        //默认最后一个节点为操作节点
-                        Model.AppAssociations.Last().AppPath = process.MainModule?.FileName;
-                        Model.AppAssociations.Last().AppName = process.MainModule?.ModuleName;
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"无法获取进程路径: {ex.Message}");
-                    }
-                }
-                selectWindow.Close();
-            }
-
-            listBox.MouseDoubleClick += (s, e) => ChooseFunc();
-
-            void UpdateListBox()
-            {
-                var searchText = searchBox.Text == "搜索进程..." ? "" : searchBox.Text.ToLower();
-                listBox.Items.Clear();
-                foreach (var process in processes.Where(p =>
-                    p.ProcessName.Contains(searchText, StringComparison.CurrentCultureIgnoreCase) ||
-                    p.MainWindowTitle.Contains(searchText, StringComparison.CurrentCultureIgnoreCase)))
-                {
-                    listBox.Items.Add($"{process.ProcessName} - {process.MainWindowTitle}");
-                }
-            }
-
-            searchBox.GotFocus += (s, e) => {
-                if (searchBox.Text == "搜索进程...")
-                    searchBox.Text = "";
-            };
-
-            searchBox.LostFocus += (s, e) => {
-                if (string.IsNullOrWhiteSpace(searchBox.Text))
-                    searchBox.Text = "搜索进程...";
-            };
-
-            searchBox.TextChanged += (s, e) => UpdateListBox();
-            selectButton.Click += (s, e) => ChooseFunc();
-
-            // 初始化列表
-            UpdateListBox();
-
-            selectWindow.Content = mainPanel;
-            selectWindow.ShowDialog();
         }
 
         /// <summary>

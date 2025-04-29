@@ -69,6 +69,14 @@
                             <Button
                                 Margin="5,0,0,0"
                                 hc:BorderElement.CornerRadius="10"
+                                hc:IconElement.Geometry="{StaticResource SearchGeometry}"
+                                Command="{Binding DataContext.EditAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                Style="{StaticResource ButtonIcon}"
+                                ToolTip="编辑" />
+                            <Button
+                                Margin="5,0,0,0"
+                                hc:BorderElement.CornerRadius="10"
                                 hc:IconElement.Geometry="{StaticResource AddGeometry}"
                                 Command="{Binding DataContext.AddTodoItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"

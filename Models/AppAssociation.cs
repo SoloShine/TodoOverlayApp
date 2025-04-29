@@ -1,9 +1,13 @@
 
+using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows;
 
 namespace TodoOverlayApp.Models
 {
@@ -115,6 +119,45 @@ namespace TodoOverlayApp.Models
                 OnPropertyChanged(nameof(Description));
             }
         }
+
+        /// <summary>
+        /// 选择一个应用，并将其路径设置为选中应用的AppPath。
+        /// </summary>
+        /// <param name="app"></param>
+        public static void SelectApp(AppAssociation app)
+        {
+            var openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                //从完整路径获取文件名
+                var fileName = Path.GetFileName(openFileDialog.FileName);
+
+                app.AppName = fileName;
+                app.AppPath = openFileDialog.FileName;
+            }
+        }
+
+        /// <summary>
+        /// 选择当前运行软件，并将其路径设置为选中应用的AppPath。
+        /// </summary>
+        /// <param name="app"></param>
+        public static void SelectRunningApp(AppAssociation app)
+        {
+            var selectWindow = new Views.SelectRunningAppWindow();
+            if (selectWindow.ShowDialog() == true && selectWindow.SelectedProcess != null)
+            {
+                try
+                {
+                    app.AppPath = selectWindow.SelectedProcess.MainModule?.FileName;
+                    app.AppName = selectWindow.SelectedProcess.MainModule?.ModuleName;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"无法获取进程路径: {ex.Message}");
+                }
+            }
+        }
+
 
         public AppAssociation()
         {
