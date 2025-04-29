@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="TodoOverlayApp.Views.TodoTreeView"
+    x:Class="TodoOverlayApp.Views.SoftTodoTreeView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:TodoOverlayApp.Converters"

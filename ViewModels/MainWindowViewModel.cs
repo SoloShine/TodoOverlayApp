@@ -206,11 +206,6 @@ namespace TodoOverlayApp.ViewModels
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        /// <summary>
-        /// 自动注入悬浮窗到当前前台窗口
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void AutoInjectOverlays(object? sender, EventArgs e)
         {
             // 获取当前前台窗口句柄
@@ -247,11 +242,6 @@ namespace TodoOverlayApp.ViewModels
             }
         }
 
-        /// <summary>
-        /// 切换软件待办项的注入状态
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <exception cref="NotImplementedException"></exception>
         /// <summary>
         /// 切换软件待办项的注入状态
         /// </summary>

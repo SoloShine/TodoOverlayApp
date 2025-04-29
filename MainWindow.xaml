@@ -40,14 +40,30 @@
                 <ColumnDefinition Width="150" />
             </Grid.ColumnDefinitions>
             <!--  使用新的UserControl替换之前的TreeView  -->
-            <views:TodoTreeView />
-            <StackPanel Grid.Column="1" VerticalAlignment="Bottom">
-                <hc:TransitioningContentControl>
+            <DockPanel>
+                <TextBlock Text="软件关联视图" DockPanel.Dock="Top"/>
+                <views:SoftTodoTreeView DockPanel.Dock="Bottom"/>
+            </DockPanel>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <!-- 功能区 -->
+                    <RowDefinition/>
+                    <!-- 小组件区 -->
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <StackPanel>
+                    <StackPanel HorizontalAlignment="Left">
+                        <RadioButton GroupName="ViewMode" Content="软件关联视图" Margin="5"/>
+                        <RadioButton GroupName="ViewMode" Content="自定义分组视图" Margin="5"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Row="1" VerticalAlignment="Bottom">
                     <Viewbox MaxWidth="200">
                         <hc:FlipClock Margin="32"/>
                     </Viewbox>
-                </hc:TransitioningContentControl>
-            </StackPanel>
+                </StackPanel>
+            </Grid>
+            
         </Grid>
     </Grid>
 </hc:Window>

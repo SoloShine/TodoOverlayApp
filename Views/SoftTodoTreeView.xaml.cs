@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace TodoOverlayApp.Views
 {
     /// <summary>
-    /// TodoTreeView.xaml 的交互逻辑
+    /// SoftTodoTreeView.xaml 的交互逻辑
     /// </summary>
-    public partial class TodoTreeView : UserControl
+    public partial class SoftTodoTreeView : UserControl
     {
-        public TodoTreeView()
+        public SoftTodoTreeView()
         {
             InitializeComponent();
         }
