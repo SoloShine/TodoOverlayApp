@@ -41,7 +41,7 @@ namespace TodoOverlayApp.Views
             SearchBox.TextChanged += (s, e) => UpdateListBox();
             ProcessListBox.MouseDoubleClick += (s, e) => SelectProcess();
             SelectButton.Click += (s, e) => SelectProcess();
-            CancelButton.Click += (s, e) => Close();
+            CancelButton.Click += (s, e) => { DialogResult = false; Close(); };
         }
 
         private void UpdateListBox()

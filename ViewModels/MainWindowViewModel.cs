@@ -60,6 +60,7 @@ namespace TodoOverlayApp.ViewModels
 
         public ICommand ResetAppCommand { get; }
         public ICommand EditAppCommand { get; }
+        public ICommand EditTodoItemCommand { get; }
 
         private readonly DispatcherTimer autoInjectTimer;
         public MainWindowViewModel()
@@ -87,6 +88,7 @@ namespace TodoOverlayApp.ViewModels
             ToggleIsInjectedCommand = new RelayCommand(ToggleIsInjected);
             ResetAppCommand = new RelayCommand(ResetApp);
             EditAppCommand = new RelayCommand(EditApp);
+            EditTodoItemCommand = new RelayCommand(EditTodoItem);
             //周期遍历model中AppAssociations，当AppAssociation中IsInjected为true的时候，尝试自动注入OverlayWindow
             autoInjectTimer = new DispatcherTimer
             {
@@ -161,6 +163,25 @@ namespace TodoOverlayApp.ViewModels
                 app.AppPath = editWindow.App.AppPath;
                 app.IsNonApp = editWindow.App.IsNonApp;
                 app.Description = editWindow.App.Description;
+
+                // 保存配置到文件
+                Model.SaveToFileAsync().ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// 编辑一个待办事项。弹出编辑窗口，如果用户点击确定则更新原始对象并保存配置到文件。
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void EditTodoItem(object? parameter)
+        {
+            if (parameter is not TodoItem todo) return;
+            var editWindow = new EditTodoItemWindow(todo);
+            if (editWindow.ShowDialog() == true)
+            {
+                // 更新原始对象
+                todo.Content = editWindow.Todo.Content;
+                todo.Description = editWindow.Todo.Description;
 
                 // 保存配置到文件
                 Model.SaveToFileAsync().ConfigureAwait(false);

@@ -1,0 +1,61 @@
+﻿<Window
+    x:Class="TodoOverlayApp.Views.EditTodoItemWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="编辑待办项"
+    Width="400"
+    Height="300"
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterScreen">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="40" />
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0">
+
+            <!--  Content 编辑  -->
+            <StackPanel Margin="0,0,0,10" DockPanel.Dock="Top">
+                <TextBlock Margin="0,0,0,5" Text="内容:" />
+                <TextBox x:Name="ContentTextBox" Padding="5" />
+            </StackPanel>
+
+            <!--  Description 编辑  -->
+            <DockPanel Margin="0,10,0,10" DockPanel.Dock="Bottom">
+                <TextBlock
+                    Margin="0,0,0,5"
+                    DockPanel.Dock="Top"
+                    Text="描述:" />
+                <TextBox
+                    x:Name="DescriptionTextBox"
+                    Margin="0,5"
+                    VerticalContentAlignment="Top"
+                    AcceptsReturn="True"
+                    DockPanel.Dock="Bottom"
+                    TextWrapping="Wrap"
+                    VerticalScrollBarVisibility="Auto" />
+            </DockPanel>
+        </DockPanel>
+
+        <!--  按钮  -->
+        <StackPanel
+            Grid.Row="1"
+            Margin="0,5,0,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                x:Name="SaveButton"
+                Width="80"
+                Margin="0,0,10,0"
+                Padding="0,3"
+                Background="{DynamicResource PrimaryBrush}"
+                Content="保存"
+                Foreground="{DynamicResource PrimaryTextBrush}" />
+            <Button
+                x:Name="CancelButton"
+                Width="80"
+                Padding="0,3"
+                Content="取消" />
+        </StackPanel>
+    </Grid>
+</Window>

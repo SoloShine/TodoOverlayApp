@@ -19,9 +19,18 @@
         <TextBox
             Width="150"
             Margin="5,0,0,0"
-            BorderBrush="{StaticResource PrimaryTextBrush}"
+            BorderBrush="{DynamicResource PrimaryTextBrush}"
             BorderThickness="0,0,0,1"
             Text="{Binding Content}" />
+        <!-- 编辑按钮 -->
+        <Button
+            Margin="5,0,0,0"
+            hc:BorderElement.CornerRadius="10"
+            hc:IconElement.Geometry="{StaticResource SearchGeometry}"
+            Command="{Binding Source={StaticResource MainViewModel}, Path=EditTodoItemCommand}"
+            CommandParameter="{Binding}"
+            Style="{StaticResource ButtonIcon}"
+            ToolTip="编辑当前节点" />
         <Button
             Margin="5,0,0,0"
             hc:BorderElement.CornerRadius="10"
