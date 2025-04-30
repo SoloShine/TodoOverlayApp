@@ -2,11 +2,13 @@
     x:Class="TodoOverlayApp.Views.TodoItemControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:TodoOverlayApp.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:TodoOverlayApp.Models"
     xmlns:vm="clr-namespace:TodoOverlayApp.ViewModels"
+    d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
     d:DesignHeight="50"
     d:DesignWidth="400"
     mc:Ignorable="d">
@@ -16,13 +18,17 @@
             BorderBrush="Black"
             BorderThickness="1"
             IsChecked="{Binding IsCompleted}" />
+        <TextBlock
+            VerticalAlignment="Center"
+            Text="{Binding Name}"
+            Visibility="{Binding AppPath, Converter={StaticResource String2VisibilityConverter}}" />
         <TextBox
             Width="150"
             Margin="5,0,0,0"
             BorderBrush="{DynamicResource PrimaryTextBrush}"
             BorderThickness="0,0,0,1"
             Text="{Binding Content}" />
-        <!-- 编辑按钮 -->
+        <!--  编辑按钮  -->
         <Button
             Margin="5,0,0,0"
             hc:BorderElement.CornerRadius="10"
@@ -39,6 +45,39 @@
             CommandParameter="{Binding}"
             Style="{StaticResource ButtonIcon}"
             ToolTip="添加子节点" />
+        <Button
+            hc:IconElement.Geometry="{StaticResource EyeOpenGeometry}"
+            Command="{Binding Source={StaticResource MainViewModel}, Path=ForceLaunchCommand}"
+            CommandParameter="{Binding}"
+            Style="{StaticResource ButtonIcon}"
+            ToolTip="强制唤起该软件"
+            Visibility="{Binding AppPath, Converter={StaticResource String2VisibilityConverter}}" />
+        <ToggleButton
+            BorderThickness="0"
+            Command="{Binding Source={StaticResource MainViewModel}, Path=ToggleIsInjectedCommand}"
+            CommandParameter="{Binding}"
+            IsChecked="{Binding IsInjected}"
+            Style="{StaticResource ToggleButtonFlip}"
+            Visibility="{Binding AppPath, Converter={StaticResource String2VisibilityConverter}}">
+            <hc:StatusSwitchElement.CheckedElement>
+                <Border Background="{DynamicResource DangerBrush}">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource TextIconBrush}"
+                        Text="开"
+                        ToolTip="点击关闭注入功能" />
+                </Border>
+            </hc:StatusSwitchElement.CheckedElement>
+            <Border Background="{DynamicResource PrimaryBrush}">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextIconBrush}"
+                    Text="关"
+                    ToolTip="点击打开注入功能" />
+            </Border>
+        </ToggleButton>
         <Button
             Margin="5,0,0,0"
             hc:IconElement.Geometry="{StaticResource DeleteFillCircleGeometry}"

@@ -1,14 +1,14 @@
 {
   "AppAssociations": [
     {
-      "Id": "c0a401d3-ae07-401a-9e42-a95f39592ee5",
+      "Id": "d345eb06-9d77-490b-872b-591c15bff983",
       "AppPath": "",
       "AppName": "\u666E\u901A\u5F85\u529E",
       "IsInjected": false,
       "IsNonApp": true,
       "TodoItems": [
         {
-          "Id": "8e397d09-8da9-45b1-906b-1a62d6bfd804",
+          "Id": "c51e43ef-2810-4e10-9a66-82ff902842a9",
           "ParentId": "",
           "Content": "\u666E\u901A\u5F85\u529E\u98791",
           "SoftId": "",
@@ -19,7 +19,7 @@
           "Description": ""
         },
         {
-          "Id": "da6c39da-0100-498c-8ef3-a31d5912d265",
+          "Id": "28d3259e-e5c8-4dff-a524-33a534186883",
           "ParentId": "",
           "Content": "\u666E\u901A\u5F85\u529E\u98792",
           "SoftId": "",
@@ -34,14 +34,14 @@
       "Description": ""
     },
     {
-      "Id": "cf1b9e9c-b6a1-47ea-8fac-0584f44a6c62",
+      "Id": "4eb360d5-5bf2-4611-8944-bb7425cc1dd4",
       "AppPath": "C:\\WINDOWS\\system32\\notepad.exe",
       "AppName": "\u8BB0\u4E8B\u672C",
       "IsInjected": true,
       "IsNonApp": false,
       "TodoItems": [
         {
-          "Id": "9012b512-1c20-434a-8b6c-d249bc9a54eb",
+          "Id": "7087dd54-c4df-4f4b-b88c-60b8a9d7ee38",
           "ParentId": "",
           "Content": "\u8F6F\u4EF6\u5F85\u529E\u98791",
           "SoftId": "",
@@ -52,7 +52,7 @@
           "Description": ""
         },
         {
-          "Id": "fee46821-7660-4d00-9ccb-fa1161b2c630",
+          "Id": "ba4ec9f3-0ec3-4db3-893e-772470524182",
           "ParentId": "",
           "Content": "\u8F6F\u4EF6\u5F85\u529E\u98792",
           "SoftId": "",

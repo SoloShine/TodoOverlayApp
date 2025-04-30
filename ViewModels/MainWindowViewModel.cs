@@ -45,12 +45,12 @@ namespace TodoOverlayApp.ViewModels
             }
         }
 
-        public ICommand AddAppCommand { get; }
-        public ICommand RemoveAppCommand { get; }
+        //public ICommand AddAppCommand { get; }
+        //public ICommand RemoveAppCommand { get; }
         //public ICommand SelectAppCommand { get; }
         //public ICommand SelectRunningAppCommand { get; }
         public ICommand ForceLaunchCommand { get; }
-        public ICommand AddTodoItemCommand { get; }
+        //public ICommand AddTodoItemCommand { get; }
         public ICommand DeleteTodoItemCommand { get; }
 
         public ICommand AddSubTodoItemCommand { get; }
@@ -58,8 +58,9 @@ namespace TodoOverlayApp.ViewModels
 
         public ICommand ToggleIsInjectedCommand { get; }
 
-        public ICommand ResetAppCommand { get; }
-        public ICommand EditAppCommand { get; }
+        public ICommand ResetAppConfigCommand { get; }
+        public ICommand ResetTodoCommand { get; }
+        //public ICommand EditAppCommand { get; }
         public ICommand EditTodoItemCommand { get; }
 
         private readonly DispatcherTimer autoInjectTimer;
@@ -76,18 +77,22 @@ namespace TodoOverlayApp.ViewModels
                 model = new MainWindowModel();
             }
 
-            AddAppCommand = new RelayCommand(AddApp);
-            RemoveAppCommand = new RelayCommand(RemoveApp);
+            //从数据库加载待办事项todo
+            model.TodoItems = MainWindowModel.LoadFromDatabase();
+
+            //AddAppCommand = new RelayCommand(AddApp);
+            //RemoveAppCommand = new RelayCommand(RemoveApp);
             //SelectAppCommand = new RelayCommand(SelectApp);
             //SelectRunningAppCommand = new RelayCommand(SelectRunningApp);
             ForceLaunchCommand = new RelayCommand(ForceLaunch);
-            AddTodoItemCommand = new RelayCommand(AddTodoItem);
+            //AddTodoItemCommand = new RelayCommand(AddTodoItem);
             DeleteTodoItemCommand = new RelayCommand(DeleteTodoItem);
             AddSubTodoItemCommand = new RelayCommand(AddSubTodoItem);
             DeleteSubTodoItemCommand = new RelayCommand(DeleteTodoItem); // 复用现有的删除方法
             ToggleIsInjectedCommand = new RelayCommand(ToggleIsInjected);
-            ResetAppCommand = new RelayCommand(ResetApp);
-            EditAppCommand = new RelayCommand(EditApp);
+            ResetAppConfigCommand = new RelayCommand(ResetAppConfig);
+            ResetTodoCommand = new RelayCommand(ResetTodo);
+            //EditAppCommand = new RelayCommand(EditApp);
             EditTodoItemCommand = new RelayCommand(EditTodoItem);
             //周期遍历model中AppAssociations，当AppAssociation中IsInjected为true的时候，尝试自动注入OverlayWindow
             autoInjectTimer = new DispatcherTimer
@@ -102,10 +107,10 @@ namespace TodoOverlayApp.ViewModels
         /// 重置应用数据，创建新的MainWindowModel实例并清理现有资源
         /// </summary>
         /// <param name="parameter"></param>
-        private void ResetApp(object? parameter)
+        private void ResetAppConfig(object? parameter)
         {
             var result = MessageBox.Show(
-                "确定要重置应用吗？这将清除所有待办项和应用关联。",
+                "确定要重置应用吗？这将清除除开todo外的所有数据，且无法恢复。",
                 "确认重置",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
@@ -125,47 +130,21 @@ namespace TodoOverlayApp.ViewModels
             }
         }
 
-        /// <summary>
-        /// 添加一个应用。将新应用的路径设置为选中状态的AppPath，并将其加入到集合中。
-        /// </summary>
-        /// <param name="parameter"></param>
-        private void AddApp(object? parameter)
+        private void ResetTodo(object? parameter)
         {
-            var newApp = new AppAssociation();
-            Model.AppAssociations.Add(newApp);
-            //弹出一个二选一选项
-            var result = MessageBox.Show("是否为当前运行软件添加待办事项？否为打开资源管理器手动选择", "选择操作", MessageBoxButton.YesNo);
-            if (result == MessageBoxResult.Yes)
-            {
-                // 执行与当前运行软件相关的逻辑
-                AppAssociation.SelectRunningApp(newApp);
-            }
-            else if (result == MessageBoxResult.No)
-            {
-                // 选择文件路径的逻辑
-                AppAssociation.SelectApp(newApp);
-            }
-        }
-
-        /// <summary>
-        /// 编辑一个应用。弹出编辑窗口，如果用户点击确定则更新原始对象并保存配置到文件。
-        /// </summary>
-        /// <param name="parameter"></param>
-        private void EditApp(object? parameter)
-        {
-            if (parameter is not AppAssociation app) return;
-
-            var editWindow = new EditAppWindow(app);
-            if (editWindow.ShowDialog() == true)
-            {
-                // 更新原始对象
-                app.AppName = editWindow.App.AppName;
-                app.AppPath = editWindow.App.AppPath;
-                app.IsNonApp = editWindow.App.IsNonApp;
-                app.Description = editWindow.App.Description;
-
-                // 保存配置到文件
-                Model.SaveToFileAsync().ConfigureAwait(false);
+            var result = MessageBox.Show(
+                "确定要重置所有todo数据吗，清除之前请做好备份，否则无法恢复。",
+                "确认重置",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Yes) {
+                //清除当前载入数据
+                Model.TodoItems = new ObservableCollection<TodoItemModel>();
+                MessageBox.Show("重置成功！", "重置完成", MessageBoxButton.OK, MessageBoxImage.Information);
+                //清除数据库数据，并初始化
+                App.DatabaseInitializer.ResetDatabaseAsync().ConfigureAwait(false);
+                //重新加载数据
+                Model.TodoItems = MainWindowModel.LoadFromDatabase();
             }
         }
 
@@ -175,29 +154,18 @@ namespace TodoOverlayApp.ViewModels
         /// <param name="parameter"></param>
         private void EditTodoItem(object? parameter)
         {
-            if (parameter is not TodoItem todo) return;
+            if (parameter is not TodoItemModel todo) return;
             var editWindow = new EditTodoItemWindow(todo);
             if (editWindow.ShowDialog() == true)
             {
                 // 更新原始对象
                 todo.Content = editWindow.Todo.Content;
                 todo.Description = editWindow.Todo.Description;
+                todo.AppPath = editWindow.Todo.AppPath;
+                todo.Name = editWindow.Todo.Name;
 
                 // 保存配置到文件
                 Model.SaveToFileAsync().ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
-        /// 移除一个应用。如果选中的是当前要删除的应用，则将选中状态设置为null。
-        /// </summary>
-        /// <param name="parameter"></param>
-        private void RemoveApp(object? parameter)
-        {
-            if (parameter is AppAssociation app)
-            {
-                if (app.IsNonApp) return;
-                Model.AppAssociations.Remove(app);
             }
         }
 
@@ -211,23 +179,20 @@ namespace TodoOverlayApp.ViewModels
             // 获取当前前台窗口句柄
             IntPtr foregroundHandle = Utils.NativeMethods.GetForegroundWindow();
 
-            foreach (var app in Model.AppAssociations)
+            foreach (var item in Model.TodoItems)
             {
-                if (!app.IsInjected || app.IsNonApp)
+                if (!item.IsInjected || item.TodoItemType != TodoItemType.App || string.IsNullOrEmpty(item.AppPath) || !File.Exists(item.AppPath))
                     continue;
 
-                if (string.IsNullOrEmpty(app.AppPath) || !File.Exists(app.AppPath))
-                    continue;
-
-                string processName = Path.GetFileNameWithoutExtension(app.AppPath);
+                string processName = Path.GetFileNameWithoutExtension(item.AppPath);
                 var processes = Process.GetProcessesByName(processName);
                 if (processes.Length == 0)
                 {
                     // 如果进程未运行且之前已经创建了 overlay，则关闭它
-                    if (_overlayWindows.TryGetValue(app.AppPath, out OverlayWindow? value))
+                    if (_overlayWindows.TryGetValue(item.AppPath, out OverlayWindow? value))
                     {
                         value.Close();
-                        _overlayWindows.Remove(app.AppPath);
+                        _overlayWindows.Remove(item.AppPath);
                     }
                     continue;
                 }
@@ -238,7 +203,7 @@ namespace TodoOverlayApp.ViewModels
                     continue;
 
                 // 调用公共方法处理悬浮窗逻辑
-                HandleOverlayWindow(app, targetWindowHandle, foregroundHandle);
+                HandleOverlayWindow(item, targetWindowHandle, foregroundHandle);
             }
         }
 
@@ -248,16 +213,16 @@ namespace TodoOverlayApp.ViewModels
         /// <param name="parameter"></param>
         private void ToggleIsInjected(object? parameter)
         {
-            if (parameter is AppAssociation app)
+            if (parameter is TodoItemModel item)
             {
-                if (app.IsNonApp) return;
-                if (!File.Exists(app.AppPath))
+                if (item.TodoItemType != TodoItemType.App) return;
+                if (!File.Exists(item.AppPath))
                 {
                     MessageBox.Show("关联软件未安装，请检查路径。");
                     return;
                 }
 
-                var processName = Path.GetFileNameWithoutExtension(app.AppPath);
+                var processName = Path.GetFileNameWithoutExtension(item.AppPath);
                 var targetProcesses = Process.GetProcessesByName(processName);
                 if (targetProcesses.Length == 0) return;
 
@@ -271,22 +236,31 @@ namespace TodoOverlayApp.ViewModels
                 }
 
                 // 调用公共方法处理悬浮窗逻辑
-                HandleOverlayWindow(app, targetWindowHandle, Utils.NativeMethods.GetForegroundWindow());
+                HandleOverlayWindow(item, targetWindowHandle, Utils.NativeMethods.GetForegroundWindow());
 
-                // 保存配置
-                Model.SaveToFileAsync().ConfigureAwait(false);
+                // 所有关联该软件的todo都要更新注入状态
+                void UpdateIsInjected(TodoItemModel todo)
+                {
+                    todo.IsInjected = item.IsInjected;
+                    if (todo.SubItems != null)
+                        foreach (var subItem in todo.SubItems)
+                            UpdateIsInjected(subItem);
+                }
+
+                UpdateIsInjected(item);
+
             }
         }
 
         /// <summary>
         /// 处理悬浮窗的创建、更新和关闭逻辑。
         /// </summary>
-        /// <param name="app">目标应用</param>
+        /// <param name="item">目标应用</param>
         /// <param name="targetWindowHandle">目标窗口句柄</param>
         /// <param name="foregroundHandle">当前前台窗口句柄</param>
-        private void HandleOverlayWindow(AppAssociation app, IntPtr targetWindowHandle, IntPtr foregroundHandle)
+        private void HandleOverlayWindow(TodoItemModel item, IntPtr targetWindowHandle, IntPtr foregroundHandle)
         {
-            var appKey = app.AppPath;
+            var appKey = item.AppPath;
             if (string.IsNullOrEmpty(appKey)) return;
             // 若目标窗口为前台且尚未创建 overlay，则创建 overlay
             if (foregroundHandle == targetWindowHandle)
@@ -294,7 +268,11 @@ namespace TodoOverlayApp.ViewModels
                 if (!_overlayWindows.ContainsKey(appKey))
                 {
                     Debug.WriteLine("窗口需要创建");
-                    var overlayWindow = new OverlayWindow(app.TodoItems)
+                    //从所有todo中筛选出当前应用的todo项，并创建overlay窗口，注意这里是tree，不是list，所以不能用linq筛选
+                    //尝试从数据库中获取数据后再重组tree结构
+                    var apps = App.TodoItemRepository.GetByAppPathAsync(appKey).Result;
+                    var appTrees = MainWindowModel.BuildTodoItemTree([.. apps]);
+                    var overlayWindow = new OverlayWindow([.. appTrees])
                     {
                         Topmost = false
                     };
@@ -396,13 +374,13 @@ namespace TodoOverlayApp.ViewModels
         /// <param name="parameter"></param>
         private void ForceLaunch(object? parameter)
         {
-            if (parameter is AppAssociation app)
+            if (parameter is TodoItemModel item)
             {
-                if (app.IsNonApp) return;
-                if (File.Exists(app.AppPath))
+                if (item.TodoItemType != TodoItemType.App) return;
+                if (File.Exists(item.AppPath))
                 {
                     // 获取目标进程名
-                    string processName = Path.GetFileNameWithoutExtension(app.AppPath);
+                    string processName = Path.GetFileNameWithoutExtension(item.AppPath);
                     Process[] processes = Process.GetProcessesByName(processName);
 
                     if (processes.Length > 0)
@@ -418,7 +396,7 @@ namespace TodoOverlayApp.ViewModels
                         if (mainWindowHandle != IntPtr.Zero && Utils.NativeMethods.IsWindow(mainWindowHandle))
                         {
                             Debug.WriteLine("找到主窗口句柄，尝试将其激活");
-                            ActivateWindow(mainWindowHandle, app.AppName);
+                            ActivateWindow(mainWindowHandle, item.Name);
                         }
                         else
                         {
@@ -435,13 +413,13 @@ namespace TodoOverlayApp.ViewModels
                                 if (visibleWindow != IntPtr.Zero)
                                 {
                                     Debug.WriteLine("找到可见窗口，尝试激活");
-                                    ActivateWindow(visibleWindow, app.AppName);
+                                    ActivateWindow(visibleWindow, item.Name);
                                 }
                                 else
                                 {
                                     // 如果没有可见窗口，尝试激活第一个找到的窗口
                                     Debug.WriteLine("没有找到可见窗口，尝试激活第一个窗口");
-                                    ActivateWindow(windowHandles[0], app.AppName);
+                                    ActivateWindow(windowHandles[0], item.Name);
                                 }
                             }
                             else
@@ -450,7 +428,7 @@ namespace TodoOverlayApp.ViewModels
                                 Debug.WriteLine("没有找到任何窗口");
 
                                 MessageBoxResult result = MessageBox.Show(
-                                    $"应用 {app.AppName ?? Path.GetFileName(app.AppPath)} 正在运行，但未找到可以激活的窗口。\n\n" +
+                                    $"应用 {item.Name ?? Path.GetFileName(item.AppPath)} 正在运行，但未找到可以激活的窗口。\n\n" +
                                     "这可能是因为:\n" +
                                     "- 程序以系统服务或后台进程方式运行\n" +
                                     "- 程序窗口被特殊隐藏\n" +
@@ -465,7 +443,7 @@ namespace TodoOverlayApp.ViewModels
                                     try
                                     {
                                         // 尝试启动新实例，但不关闭现有进程
-                                        Process.Start(new ProcessStartInfo(app.AppPath) { UseShellExecute = true });
+                                        Process.Start(new ProcessStartInfo(item.AppPath) { UseShellExecute = true });
                                         Debug.WriteLine("尝试启动新实例");
                                     }
                                     catch (Exception ex)
@@ -482,8 +460,8 @@ namespace TodoOverlayApp.ViewModels
                         // 应用未运行，启动它
                         try
                         {
-                            Process.Start(new ProcessStartInfo(app.AppPath) { UseShellExecute = true });
-                            Debug.WriteLine($"启动应用: {app.AppName ?? Path.GetFileName(app.AppPath)}");
+                            Process.Start(new ProcessStartInfo(item.AppPath) { UseShellExecute = true });
+                            Debug.WriteLine($"启动应用: {item.Name ?? Path.GetFileName(item.AppPath)}");
                         }
                         catch (Exception ex)
                         {
@@ -584,31 +562,36 @@ namespace TodoOverlayApp.ViewModels
         }
 
         /// <summary>
-        /// 添加待办项到当前选中软件关联的列表中
-        /// </summary>
-        /// <param name="parameter"></param>
-        private void AddTodoItem(object? parameter)
-        {
-            if (parameter is AppAssociation app)
-            {
-                app.TodoItems.Add(new TodoItem { Content = "新待办项", IsCompleted = false, ParentId = app.Id });
-                app.IsExpanded = true;
-            }
-            Model.SaveToFileAsync().ConfigureAwait(false);
-        }
-
-        // 添加新的方法来处理子待办项
-        /// <summary>
         /// 为待办项添加子待办项
         /// </summary>
         /// <param name="parameter">父待办项</param>
         private void AddSubTodoItem(object? parameter)
         {
-            if (parameter is TodoItem parentItem && parentItem!=null)
+            //没有父项的时候，直接添加到根节点
+            if(parameter == null)
             {
-                parentItem.SubItems?.Add(new TodoItem { Content = "新子待办项", IsCompleted = false, ParentId = parentItem.Id });
+                var item = new TodoItemModel() { Id = Guid.NewGuid().ToString(), Content = "新待办项", IsCompleted = false };
+                Model.TodoItems.Add(item);
+                App.TodoItemRepository.AddAsync(item).ConfigureAwait(false);
+                return;
+            }
+            if (parameter is TodoItemModel parentItem && parentItem!=null)
+            {
+                var item = new TodoItemModel()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Content = "新子待办项",
+                    IsCompleted = false,
+                    ParentId = parentItem.Id,
+                    IsExpanded = true,
+                    Name = parentItem.Name,
+                    AppPath = parentItem.AppPath,
+                    IsInjected = parentItem.IsInjected,
+                    TodoItemType = parentItem.TodoItemType
+                };
                 parentItem.IsExpanded = true;
-                Model.SaveToFileAsync().ConfigureAwait(false);
+                parentItem.SubItems?.Add(item);
+                App.TodoItemRepository.AddAsync(item).ConfigureAwait(false);
             }
         }
 
@@ -618,56 +601,12 @@ namespace TodoOverlayApp.ViewModels
         /// <param name="parameter"></param>
         private void DeleteTodoItem(object? parameter)
         {
-            if (parameter is TodoItem item)
+            if (parameter is TodoItemModel item)
             {
                 var result = MessageBox.Show("确定要删除此待办项吗？", "确认删除", MessageBoxButton.YesNo);
                 if (result != MessageBoxResult.Yes) return;
 
-                bool deleted = false;
-
-                var app = Model.AppAssociations.FirstOrDefault(a => a.TodoItems.Contains(item));
-
-                // 1. 首先检查当前选中应用的一级待办项
-                if (app != null)
-                {
-                    var directMatch = app.TodoItems.FirstOrDefault(t => t.Id == item.Id);
-                    if (directMatch != null)
-                    {
-                        Debug.WriteLine("在选中应用的一级待办项中找到匹配，删除中...");
-                        app.TodoItems.Remove(directMatch);
-                        deleted = true;
-                    }
-                    else
-                    {
-                        // 2. 在当前选中应用的所有子项中查找
-                        Debug.WriteLine("在选中应用的子待办项中查找...");
-                        deleted = FindAndRemoveItemById(app.TodoItems, item.Id);
-                    }
-                }
-
-                // 3. 如果仍未找到，在所有应用中查找
-                if (!deleted && Model.AppAssociations.Count > 0)
-                {
-                    Debug.WriteLine("在所有应用中查找待办项...");
-                    foreach (var app2 in Model.AppAssociations)
-                    {
-                        if (FindAndRemoveItemById(app2.TodoItems, item.Id))
-                        {
-                            deleted = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!deleted)
-                {
-                    Debug.WriteLine("未找到待办项，删除失败");
-                    MessageBox.Show("未能找到要删除的待办项", "删除失败", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-                else
-                {
-                    Debug.WriteLine("删除成功");
-                }
+                FindAndRemoveItemById(Model.TodoItems, item.Id);
             }
         }
 
@@ -677,13 +616,15 @@ namespace TodoOverlayApp.ViewModels
         /// <param name="items"></param>
         /// <param name="itemId"></param>
         /// <returns></returns>
-        private static bool FindAndRemoveItemById(ObservableCollection<TodoItem> items, string itemId)
+        private static bool FindAndRemoveItemById(ObservableCollection<TodoItemModel> items, string itemId)
         {
             // 先检查当前级别
             var directMatch = items.FirstOrDefault(t => t.Id == itemId);
             if (directMatch != null)
             {
                 items.Remove(directMatch);
+                //调用数据库删除操作
+                App.TodoItemRepository.DeleteAsync(itemId).ConfigureAwait(false);
                 return true;
             }
 

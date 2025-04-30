@@ -18,9 +18,9 @@ namespace TodoOverlayApp.Views
     /// <summary>
     /// SoftTodoTreeView.xaml 的交互逻辑
     /// </summary>
-    public partial class SoftTodoTreeView : UserControl
+    public partial class TodoTreeView : UserControl
     {
-        public SoftTodoTreeView()
+        public TodoTreeView()
         {
             InitializeComponent();
         }

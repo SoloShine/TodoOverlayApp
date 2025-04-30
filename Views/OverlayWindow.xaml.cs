@@ -8,9 +8,9 @@ namespace TodoOverlayApp.Views
 {
     public partial class OverlayWindow : Window
     {
-        public ObservableCollection<TodoItem> TodoItems { get; set; }
+        public ObservableCollection<TodoItemModel> TodoItems { get; set; }
 
-        public OverlayWindow(ObservableCollection<TodoItem> todoItems)
+        public OverlayWindow(ObservableCollection<TodoItemModel> todoItems)
         {
             InitializeComponent();
             TodoItems = todoItems;

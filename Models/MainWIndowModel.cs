@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using TodoOverlayApp.Services.Database.Repositories;
 
 namespace TodoOverlayApp.Models
 {
@@ -16,32 +17,7 @@ namespace TodoOverlayApp.Models
     {
         public MainWindowModel()
         {
-            AppAssociations.CollectionChanged += OnTodoItemsChanged;
-            // 默认添加一个普通的待办项集合、一个软件集合
-            //获取notepad.exe的路径
-            var notepadPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "notepad.exe");
-            AppAssociations.Add(new AppAssociation()
-            {
-                IsNonApp = true,
-                AppName = "普通待办",
-                AppPath = string.Empty,
-                TodoItems = [
-                    new() { Content = "普通待办项1", IsCompleted = false, ParentId = string.Empty }, 
-                    new() { Content = "普通待办项2", IsCompleted = false, ParentId = string.Empty },
-                ]
-            });
-            AppAssociations.Add(new AppAssociation()
-            {
-                IsNonApp = false,
-                AppName = "记事本",
-                AppPath = notepadPath,
-                IsInjected = true,
-                TodoItems =  [
-                    new() { Content = "软件待办项1", IsCompleted = false, ParentId = string.Empty },
-                    new() { Content = "软件待办项2", IsCompleted = false, ParentId = string.Empty },
-                ]
-            });
-
+            //AppAssociations.CollectionChanged += OnTodoItemsChanged;
         }
 
         #region INotifyPropertyChanged 实现
@@ -59,7 +35,23 @@ namespace TodoOverlayApp.Models
         /// <summary>
         /// 待办项集合所在的程序集合，用于在程序中切换不同的待办项集合
         /// </summary>
-        public ObservableCollection<AppAssociation> AppAssociations { get; set; } = [];
+        //public ObservableCollection<AppAssociationModel> AppAssociations { get; set; } = [];
+        private ObservableCollection<TodoItemModel> todoItems { get; set; } = [];
+        /// <summary>
+        /// 待办项集合，用于显示和编辑待办项
+        /// </summary>
+        public ObservableCollection<TodoItemModel> TodoItems
+        {
+            get => todoItems;
+            set
+            {
+                if (todoItems != value)
+                {
+                    todoItems = value;
+                    OnPropertyChanged(nameof(TodoItems));
+                }
+            }
+        }
 
         // <summary>
         /// 当前主题类型：Default或Dark
@@ -159,7 +151,15 @@ namespace TodoOverlayApp.Models
         {
             try
             {
-                var json = JsonSerializer.Serialize(this, CachedJsonSerializerOptions);
+                //不保存待办数据，仅保存软件配置，如主题类型、颜色等
+                var newModel = new MainWindowModel()
+                {
+                    ThemeType = ThemeType,
+                    ThemeColor = ThemeColor,
+                    OverlayBackground = OverlayBackground,
+                    OverlayOpacity = OverlayOpacity
+                };
+                var json = JsonSerializer.Serialize(newModel, CachedJsonSerializerOptions);
                 await File.WriteAllTextAsync(ConfigPath, json);
             }
             catch (Exception ex)
@@ -230,6 +230,10 @@ namespace TodoOverlayApp.Models
             }
         }
 
+        /// <summary>
+        /// 从文件加载配置（静态方法）
+        /// </summary>
+        /// <returns></returns>
         public static MainWindowModel? LoadFromFile()
         {
             try
@@ -241,23 +245,6 @@ namespace TodoOverlayApp.Models
                     var result = JsonSerializer.Deserialize<MainWindowModel>(json, CachedJsonSerializerOptions);
                     if (result != null)
                     {
-                        Debug.WriteLine($"从文件加载成功：{result.AppAssociations.Count} 个应用关联");
-
-                        // 特殊处理 - 确保所有子集合都被初始化
-                        foreach (var app in result.AppAssociations)
-                        {
-                            app.TodoItems ??= [];
-
-                            foreach (var item in app.TodoItems)
-                            {
-                                if (item.SubItems == null)
-                                    item.SubItems = new ObservableCollection<TodoItem>();
-
-                                // 递归确保所有子项的SubItems不为空
-                                EnsureSubItemsInitialized(item);
-                            }
-                        }
-
                         return result;
                     }
                 }
@@ -268,19 +255,88 @@ namespace TodoOverlayApp.Models
                 Debug.WriteLine($"异常详情: {ex}");
             }
 
-            return new MainWindowModel();
+            return new();
         }
 
-        private static void EnsureSubItemsInitialized(TodoItem item)
+        #region 从数据库加载待办事项
+
+        /// <summary>
+        /// 从数据库加载待办事项（静态方法）
+        /// </summary>
+        /// <returns></returns>
+        public static ObservableCollection<TodoItemModel> LoadFromDatabase()
         {
-            item.SubItems ??= [];
-
-            foreach (var subItem in item.SubItems)
-            {
-                EnsureSubItemsInitialized(subItem);
-            }
+            var items = App.TodoItemRepository.GetAllAsync().Result;
+            //组装TodoItemModel
+            List<TodoItemModel> todoItemModels = BuildTodoItemTree([.. items]);
+            return [.. todoItemModels];
         }
-        #endregion
 
+
+        /// <summary>
+        /// 将TodoItem列表转换为TodoItemModel树结构
+        /// </summary>
+        /// <param name="items">TodoItem列表</param>
+        /// <returns>树形结构的TodoItemModel根节点列表</returns>
+        public static List<TodoItemModel> BuildTodoItemTree(List<TodoItem> items)
+        {
+            return BuildTree<TodoItem, TodoItemModel>(
+                items,
+                item => item.Id,
+                item => item.ParentId,
+                item => new TodoItemModel(item),
+                model => model.SubItems,
+                (parent, child) => parent.SubItems.Add(child)
+            );
+        }
+
+        /// <summary>
+        /// 通用方法：将平面列表结构转换为树形结构
+        /// </summary>
+        /// <typeparam name="TItem">源项类型</typeparam>
+        /// <typeparam name="TItemModel">目标树节点类型（必须能从TItem构造）</typeparam>
+        /// <param name="items">源数据列表</param>
+        /// <param name="getItemId">获取项ID的函数</param>
+        /// <param name="getParentId">获取父项ID的函数</param>
+        /// <param name="createModel">从源项创建模型的函数</param>
+        /// <param name="getChildren">获取子项集合的函数</param>
+        /// <param name="addChild">添加子项的函数</param>
+        /// <returns>树形结构的根节点列表</returns>
+        public static List<TItemModel> BuildTree<TItem, TItemModel>(
+            List<TItem> items,
+            Func<TItem, string> getItemId,
+            Func<TItem, string?> getParentId,
+            Func<TItem, TItemModel> createModel,
+            Func<TItemModel, ICollection<TItemModel>> getChildren,
+            Action<TItemModel, TItemModel> addChild)
+        {
+            // 创建一个字典，用于快速查找模型实例
+            var modelLookup = items.ToDictionary(getItemId, createModel);
+
+            // 定义一个列表，用于存储根节点
+            var rootNodes = new List<TItemModel>();
+
+            foreach (var item in items)
+            {
+                var parentId = getParentId(item);
+                var itemId = getItemId(item);
+                var model = modelLookup[itemId];
+
+                // 如果 ParentId 为空或找不到父节点，则认为是根节点
+                if (string.IsNullOrEmpty(parentId) || !modelLookup.TryGetValue(parentId, out TItemModel? parentModel))
+                {
+                    rootNodes.Add(model);
+                }
+                else
+                {
+                    addChild(parentModel, model);
+                }
+            }
+
+            return rootNodes;
+        }
+
+        #endregion
+        #endregion
     }
 }
