@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using MessageBox = HandyControl.Controls.MessageBox;
 
 namespace TodoOverlayApp.Models
 {
@@ -69,7 +70,8 @@ namespace TodoOverlayApp.Models
                 try
                 {
                     item.AppPath = selectWindow.SelectedProcess.MainModule?.FileName;
-                    item.Name = selectWindow.SelectedProcess.MainModule?.ModuleName;
+                    item.Name = selectWindow.SelectedProcess.MainModule?.ModuleName ?? selectWindow.SelectedProcess.ProcessName;
+                    item.Content = item.Name;
                 }
                 catch (Exception ex)
                 {

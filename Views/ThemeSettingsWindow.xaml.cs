@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using TodoOverlayApp.Models;
 using TodoOverlayApp.Utils;
+using MessageBox = HandyControl.Controls.MessageBox;
 
 namespace TodoOverlayApp.Views
 {

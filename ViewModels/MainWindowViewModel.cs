@@ -16,6 +16,7 @@ using HandyControl.Tools;
 using Microsoft.Win32;
 using TodoOverlayApp.Models;
 using TodoOverlayApp.Views;
+using MessageBox = HandyControl.Controls.MessageBox;
 
 namespace TodoOverlayApp.ViewModels
 {

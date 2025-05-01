@@ -3,6 +3,7 @@ using System.Windows;
 using TodoOverlayApp.Utils;
 using TodoOverlayApp.ViewModels;
 using TodoOverlayApp.Views;
+using MessageBox = HandyControl.Controls.MessageBox;
 
 namespace TodoOverlayApp
 {
