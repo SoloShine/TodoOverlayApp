@@ -43,7 +43,7 @@
             <!--  使用新的UserControl替换之前的TreeView  -->
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" Text="软件关联视图" />
-                <views:TodoTreeView DockPanel.Dock="Bottom" />
+                <views:TodoTreeView DockPanel.Dock="Bottom" HorizontalAlignment="Stretch"/>
             </DockPanel>
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>

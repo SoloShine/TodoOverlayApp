@@ -15,38 +15,57 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
+        <converters:WidthMinusIndentConverter x:Key="WidthMinusIndentConverter" />
+
         <!--  递归模板 - 用于任意层级待办项  -->
         <HierarchicalDataTemplate
             x:Key="TodoItemTemplate"
             DataType="{x:Type models:TodoItem}"
             ItemsSource="{Binding SubItems}">
-            <views:TodoItemControl />
+            <Grid Width="Auto" HorizontalAlignment="Stretch">
+                <!--  添加最小宽度绑定  -->
+                <views:TodoItemControl Width="{Binding ActualWidth, ElementName=treeView, Converter={StaticResource WidthMinusIndentConverter}, ConverterParameter=40}" HorizontalAlignment="Stretch" />
+            </Grid>
         </HierarchicalDataTemplate>
+
+        <!--  自定义 TreeView 的 ControlTemplate 以修改内部布局  -->
+        <Style x:Key="CustomTreeViewStyle" TargetType="TreeView">
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
     </UserControl.Resources>
-    <TreeView
-        Margin="10"
-        Background="Transparent"
-        ItemsSource="{Binding Model.TodoItems}">
-        <TreeView.ItemContainerStyle>
-            <Style TargetType="TreeViewItem">
-                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-                <Setter Property="Padding" Value="2,5" />
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="BorderThickness" Value="0" />
-                <Style.Triggers>
-                    <Trigger Property="IsSelected" Value="True">
-                        <Setter Property="Background" Value="#F0F0F0" />
-                        <Setter Property="BorderBrush" Value="#E0E0E0" />
-                        <Setter Property="BorderThickness" Value="0" />
-                    </Trigger>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="#F5F5F5" />
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-        </TreeView.ItemContainerStyle>
-        <TreeView.ItemTemplate>
-            <StaticResource ResourceKey="TodoItemTemplate" />
-        </TreeView.ItemTemplate>
-    </TreeView>
+
+    <!--  使用 Grid 作为根节点以确保填充整个可用空间  -->
+    <Grid HorizontalAlignment="Stretch">
+        <TreeView
+            x:Name="treeView"
+            Margin="10,0,0,0"
+            ItemsSource="{Binding Model.TodoItems}"
+            Style="{StaticResource CustomTreeViewStyle}">
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="Padding" Value="2,5" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#F0F0F0" />
+                            <Setter Property="BorderBrush" Value="#E0E0E0" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#F5F5F5" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TreeView.ItemContainerStyle>
+            <TreeView.ItemTemplate>
+                <StaticResource ResourceKey="TodoItemTemplate" />
+            </TreeView.ItemTemplate>
+        </TreeView>
+    </Grid>
 </UserControl>
