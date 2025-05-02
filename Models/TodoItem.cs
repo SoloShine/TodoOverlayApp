@@ -36,7 +36,6 @@ namespace TodoOverlayApp.Models
                     _name = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(Name));
-                    if (!string.IsNullOrEmpty(Id)) App.TodoItemRepository.UpdateAsync(this).ConfigureAwait(false);
                 }
             }
         }
@@ -53,7 +52,6 @@ namespace TodoOverlayApp.Models
                     _description = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(Description));
-                    if (!string.IsNullOrEmpty(Id)) App.TodoItemRepository.UpdateAsync(this).ConfigureAwait(false);
                 }
             }
         }
@@ -71,7 +69,6 @@ namespace TodoOverlayApp.Models
                     parentId = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(ParentId));
-                    if (!string.IsNullOrEmpty(Id)) App.TodoItemRepository.UpdateAsync(this).ConfigureAwait(false);
                 }
             } 
         }
@@ -90,7 +87,6 @@ namespace TodoOverlayApp.Models
                     _content = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(Content));
-                    if (!string.IsNullOrEmpty(Id)) App.TodoItemRepository.UpdateAsync(this).ConfigureAwait(false);
                 }
             }
         }
@@ -109,7 +105,6 @@ namespace TodoOverlayApp.Models
                     _isCompleted = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(IsCompleted));
-                    if (!string.IsNullOrEmpty(Id)) App.TodoItemRepository.UpdateAsync(this).ConfigureAwait(false);
                 }
             }
         }
@@ -128,7 +123,6 @@ namespace TodoOverlayApp.Models
                     isExpanded = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(IsExpanded));
-                    if (!string.IsNullOrEmpty(Id)) App.TodoItemRepository.UpdateAsync(this).ConfigureAwait(false);
                 }
             }
         }
@@ -147,7 +141,6 @@ namespace TodoOverlayApp.Models
                     appPath = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(AppPath));
-                    if (!string.IsNullOrEmpty(Id)) App.TodoItemRepository.UpdateAsync(this).ConfigureAwait(false);
                 }
             }
         }
@@ -166,7 +159,6 @@ namespace TodoOverlayApp.Models
                     isInjected = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(IsInjected));
-                    if (!string.IsNullOrEmpty(Id)) App.TodoItemRepository.UpdateAsync(this).ConfigureAwait(false);
                 }
             }
         }
@@ -185,7 +177,6 @@ namespace TodoOverlayApp.Models
                     todoItemType = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(TodoItemType));
-                    if (!string.IsNullOrEmpty(Id)) App.TodoItemRepository.UpdateAsync(this).ConfigureAwait(false);
                 }
             }
         }
@@ -203,7 +194,6 @@ namespace TodoOverlayApp.Models
                 {
                     createdAt = value;
                     OnPropertyChanged(nameof(GreadtedAt));
-                    if (!string.IsNullOrEmpty(Id)) App.TodoItemRepository.UpdateAsync(this).ConfigureAwait(false);
                 }
             }
         }
@@ -221,7 +211,6 @@ namespace TodoOverlayApp.Models
                 {
                     updatedAt = value;
                     OnPropertyChanged(nameof(UpdatedAt));
-                    if (!string.IsNullOrEmpty(Id)) App.TodoItemRepository.UpdateAsync(this).ConfigureAwait(false);
                 }
             }
         }

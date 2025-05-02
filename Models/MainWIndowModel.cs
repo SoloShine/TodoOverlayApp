@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using TodoOverlayApp.Services.Database.Repositories;
@@ -26,8 +27,6 @@ namespace TodoOverlayApp.Models
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            //保存配置到文件
-            //SaveToFileAsync().ConfigureAwait(false);
         }
         #endregion
 
@@ -40,6 +39,7 @@ namespace TodoOverlayApp.Models
         /// <summary>
         /// 待办项集合，用于显示和编辑待办项
         /// </summary>
+        [JsonIgnore]
         public ObservableCollection<TodoItemModel> TodoItems
         {
             get => todoItems;
@@ -151,15 +151,7 @@ namespace TodoOverlayApp.Models
         {
             try
             {
-                //不保存待办数据，仅保存软件配置，如主题类型、颜色等
-                var newModel = new MainWindowModel()
-                {
-                    ThemeType = ThemeType,
-                    ThemeColor = ThemeColor,
-                    OverlayBackground = OverlayBackground,
-                    OverlayOpacity = OverlayOpacity
-                };
-                var json = JsonSerializer.Serialize(newModel, CachedJsonSerializerOptions);
+                var json = JsonSerializer.Serialize(this, CachedJsonSerializerOptions);
                 await File.WriteAllTextAsync(ConfigPath, json);
             }
             catch (Exception ex)

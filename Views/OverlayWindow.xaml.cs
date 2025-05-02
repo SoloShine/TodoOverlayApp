@@ -18,6 +18,11 @@ namespace TodoOverlayApp.Views
 
             // Ó¦ÓÃÐü¸¡´°ÉèÖÃ
             ApplyOverlaySettings();
+
+            TodoItems.CollectionChanged += (sender, e) =>
+            {
+
+            };
         }
 
         /// <summary>

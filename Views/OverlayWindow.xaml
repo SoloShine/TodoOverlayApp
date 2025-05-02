@@ -17,7 +17,7 @@
             x:Key="TodoItemTemplate"
             DataType="{x:Type models:TodoItem}"
             ItemsSource="{Binding SubItems}">
-            <views:TodoItemControl />
+            <views:TodoItemControl IsOverlay="True"/>
         </HierarchicalDataTemplate>
     </Window.Resources>
     <Border

@@ -8,7 +8,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:TodoOverlayApp.Models"
     xmlns:vm="clr-namespace:TodoOverlayApp.ViewModels"
-    d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
     d:DesignHeight="50"
     d:DesignWidth="400"
     mc:Ignorable="d">
@@ -28,16 +27,19 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
     </UserControl.Resources>
 
-    <Grid x:Name="RootGrid" HorizontalAlignment="Stretch">
+    <Grid
+        x:Name="RootGrid"
+        MinHeight="30"
+        HorizontalAlignment="Stretch">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
             <!--  复选框  -->
             <ColumnDefinition Width="Auto" />
             <!--  图标  -->
-            <ColumnDefinition Width="*" />
-            <!--  文本框  -->
             <ColumnDefinition Width="Auto" />
+            <!--  文本框  -->
+            <ColumnDefinition Width="*" />
             <!--  按钮区域  -->
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <!--  复选框  -->
@@ -58,110 +60,76 @@
             Visibility="{Binding AppPath, Converter={StaticResource String2VisibilityConverter}}" />
 
         <!--  文本框  -->
-        <TextBox
+        <TextBlock
+            x:Name="ContentTextBlock"
             Grid.Column="2"
             Margin="5,0,0,0"
-            BorderBrush="{DynamicResource PrimaryTextBrush}"
-            BorderThickness="0,0,0,1"
+            VerticalAlignment="Center"
+            Foreground="{DynamicResource PrimaryTextBrush}"
+            MouseLeftButtonDown="TextBlock_MouseLeftButtonDown"
             Text="{Binding Content}" />
 
-        <!--  按钮区域  -->
-        <StackPanel Grid.Column="3" Orientation="Horizontal">
-            <!--  编辑按钮 - 始终可见  -->
-            <Button
-                hc:IconElement.Geometry="{StaticResource SearchGeometry}"
-                Command="{Binding Source={StaticResource MainViewModel}, Path=EditTodoItemCommand}"
-                CommandParameter="{Binding}"
-                Style="{StaticResource DefaultButtonStyle}"
-                ToolTip="编辑当前节点" />
+        <!--  按钮区域，只在悬停时可见，overlay窗口直接全部隐藏，以减少交互逻辑  -->
+        <Grid Grid.Column="3" Visibility="{Binding IsOverlay, Converter={StaticResource Boolean2VisibilityReConverter}, RelativeSource={RelativeSource AncestorType=UserControl}}">
+            <StackPanel Orientation="Horizontal" Visibility="{Binding IsMouseOver, ElementName=RootGrid, Converter={StaticResource BoolToVisConverter}}">
+                <Button
+                    hc:IconElement.Geometry="{StaticResource SearchGeometry}"
+                    Command="{Binding Source={StaticResource MainViewModel}, Path=EditTodoItemCommand}"
+                    CommandParameter="{Binding}"
+                    Style="{StaticResource DefaultButtonStyle}"
+                    ToolTip="编辑当前节点" />
+                <Button
+                    hc:IconElement.Geometry="{StaticResource AddGeometry}"
+                    Command="{Binding Source={StaticResource MainViewModel}, Path=AddTodoItemCommand}"
+                    CommandParameter="{Binding}"
+                    Style="{StaticResource DefaultButtonStyle}"
+                    ToolTip="添加子节点" />
 
-            <!--  其他按钮 - 只在悬停时可见  -->
-            <Button
-                hc:IconElement.Geometry="{StaticResource AddGeometry}"
-                Command="{Binding Source={StaticResource MainViewModel}, Path=AddSubTodoItemCommand}"
-                CommandParameter="{Binding}"
-                Style="{StaticResource DefaultButtonStyle}"
-                ToolTip="添加子节点"
-                Visibility="{Binding IsMouseOver, ElementName=RootGrid, Converter={StaticResource BoolToVisConverter}}" />
+                <Button
+                    Margin="0,0,0,0"
+                    hc:IconElement.Geometry="{StaticResource EyeOpenGeometry}"
+                    Command="{Binding Source={StaticResource MainViewModel}, Path=ForceLaunchCommand}"
+                    CommandParameter="{Binding}"
+                    Style="{StaticResource DefaultButtonStyle}"
+                    Tag="{Binding AppPath}"
+                    ToolTip="强制唤起该软件"
+                    Visibility="{Binding AppPath, Converter={StaticResource String2VisibilityConverter}}" />
 
-            <Button
-                Margin="0,0,0,0"
-                hc:IconElement.Geometry="{StaticResource EyeOpenGeometry}"
-                Command="{Binding Source={StaticResource MainViewModel}, Path=ForceLaunchCommand}"
-                CommandParameter="{Binding}"
-                Tag="{Binding AppPath}"
-                ToolTip="强制唤起该软件">
-                <Button.Style>
-                    <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=RootGrid}" Value="False">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=RootGrid}" Value="True">
-                                <Setter Property="Visibility" Value="Visible" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
-
-            <ToggleButton
-                BorderThickness="0"
-                Command="{Binding Source={StaticResource MainViewModel}, Path=ToggleIsInjectedCommand}"
-                CommandParameter="{Binding}"
-                IsChecked="{Binding IsInjected}"
-                Tag="{Binding AppPath}">
-                <ToggleButton.Style>
-                    <Style BasedOn="{StaticResource ToggleButtonFlip}" TargetType="ToggleButton">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=RootGrid}" Value="False">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=RootGrid}" Value="True">
-                                <Setter Property="Visibility" Value="Visible" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ToggleButton.Style>
-                <hc:StatusSwitchElement.CheckedElement>
-                    <Border Background="{DynamicResource DangerBrush}">
+                <ToggleButton
+                    BorderThickness="0"
+                    Command="{Binding Source={StaticResource MainViewModel}, Path=ToggleIsInjectedCommand}"
+                    CommandParameter="{Binding}"
+                    IsChecked="{Binding IsInjected}"
+                    Style="{StaticResource ToggleButtonFlip}"
+                    Tag="{Binding AppPath}"
+                    Visibility="{Binding AppPath, Converter={StaticResource String2VisibilityConverter}}">
+                    <hc:StatusSwitchElement.CheckedElement>
+                        <Border Background="{DynamicResource DangerBrush}">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextIconBrush}"
+                                Text="开"
+                                ToolTip="点击关闭注入功能" />
+                        </Border>
+                    </hc:StatusSwitchElement.CheckedElement>
+                    <Border Background="{DynamicResource PrimaryBrush}">
                         <TextBlock
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Foreground="{DynamicResource TextIconBrush}"
-                            Text="开"
-                            ToolTip="点击关闭注入功能" />
+                            Text="关"
+                            ToolTip="点击打开注入功能" />
                     </Border>
-                </hc:StatusSwitchElement.CheckedElement>
-                <Border Background="{DynamicResource PrimaryBrush}">
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Foreground="{DynamicResource TextIconBrush}"
-                        Text="关"
-                        ToolTip="点击打开注入功能" />
-                </Border>
-            </ToggleButton>
+                </ToggleButton>
 
-            <Button
-                hc:IconElement.Geometry="{StaticResource DeleteFillCircleGeometry}"
-                Command="{Binding Source={StaticResource MainViewModel}, Path=DeleteTodoItemCommand}"
-                CommandParameter="{Binding}"
-                Style="{StaticResource DefaultButtonStyle}"
-                ToolTip="删除当前节点及子节点"
-                Visibility="{Binding IsMouseOver, ElementName=RootGrid, Converter={StaticResource BoolToVisConverter}}" />
-        </StackPanel>
+                <Button
+                    hc:IconElement.Geometry="{StaticResource DeleteFillCircleGeometry}"
+                    Command="{Binding Source={StaticResource MainViewModel}, Path=DeleteTodoItemCommand}"
+                    CommandParameter="{Binding}"
+                    Style="{StaticResource DefaultButtonStyle}"
+                    ToolTip="删除当前节点及子节点" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

@@ -71,7 +71,12 @@ namespace TodoOverlayApp.Services.Database.Repositories
         /// </summary>
         public async Task<int> UpdateAsync(TodoItem todoItem)
         {
-            _dbContext.Entry(todoItem).State = EntityState.Modified;
+            var existingEntity = await _dbContext.TodoItems.FindAsync(todoItem.Id);
+            if (existingEntity == null) return 0;
+
+            // 更新所有属性
+            _dbContext.Entry(existingEntity).CurrentValues.SetValues(todoItem);
+
             return await _dbContext.SaveChangesAsync();
         }
         
