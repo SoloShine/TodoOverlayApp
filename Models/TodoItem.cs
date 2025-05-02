@@ -6,50 +6,50 @@ namespace TodoOverlayApp.Models
 {
     public class TodoItem : BaseModel
     {
-        private string _id = string.Empty;
+        private string id = string.Empty;
         /// <summary>
         /// 唯一标识符
         /// </summary>
         public string Id
         {
-            get => _id;
+            get => id;
             set
             {
-                if (_id != value)
+                if (id != value)
                 {
-                    _id = value;
+                    id = value;
                     OnPropertyChanged(nameof(Id));
                 }
             }
         }
-        private string _name = string.Empty;
+        private string name = string.Empty;
         /// <summary>
         /// 名称
         /// </summary>
         public string Name
         {
-            get => _name;
+            get => name;
             set
             {
-                if (_name != value)
+                if (name != value)
                 {
-                    _name = value;
+                    name = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(Name));
                 }
             }
         }
-        private string _description = string.Empty;
+        private string description = string.Empty;
         /// <summary>
         /// 描述
         /// </summary>
         public string Description
         {
-            get => _description;
+            get => description;
             set
             {
-                if (_description != value) { 
-                    _description = value;
+                if (description != value) { 
+                    description = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(Description));
                 }
@@ -73,36 +73,36 @@ namespace TodoOverlayApp.Models
             } 
         }
 
-        private string _content = "";
+        private string content = "";
         /// <summary>
         /// 内容
         /// </summary>
         public string Content
         {
-            get => _content;
+            get => content;
             set
             {
-                if (_content != value)
+                if (content != value)
                 {
-                    _content = value;
+                    content = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(Content));
                 }
             }
         }
 
-        private bool _isCompleted;
+        private bool isCompleted;
         /// <summary>
         /// 是否完成
         /// </summary>
         public bool IsCompleted
         {
-            get => _isCompleted;
+            get => isCompleted;
             set
             {
-                if (_isCompleted != value)
+                if (isCompleted != value)
                 {
-                    _isCompleted = value;
+                    isCompleted = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(IsCompleted));
                 }

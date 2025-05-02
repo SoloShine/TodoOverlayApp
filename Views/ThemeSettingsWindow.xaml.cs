@@ -11,38 +11,38 @@ namespace TodoOverlayApp.Views
 {
     public partial class ThemeSettingsWindow : HandyControl.Controls.Window
     {
-        private MainWindowModel _model;
-        private RadioButton? _customColorRadioButton = null;
-        private RadioButton? _customThemeColorRadioButton = null;
+        private MainWindowModel model;
+        private RadioButton? customColorRadioButton = null;
+        private RadioButton? customThemeColorRadioButton = null;
 
         public ThemeSettingsWindow()
         {
             InitializeComponent();
 
             // 获取应用的模型
-            _model = App.MainViewModel?.Model ?? new MainWindowModel();
+            model = App.MainViewModel?.Model ?? new MainWindowModel();
 
             // 根据当前模型中的主题设置初始化控件
-            ThemeComboBox.SelectedIndex = _model.ThemeType == "Dark" ? 1 : 0;
+            ThemeComboBox.SelectedIndex = model.ThemeType == "Dark" ? 1 : 0;
 
             // 初始化主题颜色选择
-            bool isThemeColorPredefined = ColorPickerHelper.InitializeColorSelection(ColorsPanel, _model.ThemeColor);
+            bool isThemeColorPredefined = ColorPickerHelper.InitializeColorSelection(ColorsPanel, model.ThemeColor);
             if (!isThemeColorPredefined)
             {
                 // 创建自定义主题颜色按钮
-                CreateCustomThemeColorButton(_model.ThemeColor);
+                CreateCustomThemeColorButton(model.ThemeColor);
             }
 
             // 初始化悬浮窗背景颜色选择
-            bool isOverlayColorPredefined = ColorPickerHelper.InitializeColorSelection(OverlayColorsPanel, _model.OverlayBackground);
+            bool isOverlayColorPredefined = ColorPickerHelper.InitializeColorSelection(OverlayColorsPanel, model.OverlayBackground);
             if (!isOverlayColorPredefined)
             {
                 // 创建自定义悬浮窗背景颜色按钮
-                CreateCustomOverlayColorButton(_model.OverlayBackground);
+                CreateCustomOverlayColorButton(model.OverlayBackground);
             }
 
             // 初始化不透明度滑块
-            OpacitySlider.Value = _model.OverlayOpacity;
+            OpacitySlider.Value = model.OverlayOpacity;
 
             // 初始化预览
             UpdatePreview();
@@ -53,18 +53,18 @@ namespace TodoOverlayApp.Views
         /// </summary>
         private void CreateCustomThemeColorButton(string colorHex)
         {
-            _customThemeColorRadioButton = ColorPickerHelper.CreateOrUpdateColorButton(
-                _customThemeColorRadioButton, colorHex, "ThemeColors", ColorRadioButton_Checked);
+            customThemeColorRadioButton = ColorPickerHelper.CreateOrUpdateColorButton(
+                customThemeColorRadioButton, colorHex, "ThemeColors", ColorRadioButton_Checked);
 
             // 添加到面板中，确保添加在自定义按钮之前
             int customButtonIndex = ColorsPanel.Children.IndexOf(CustomThemeColorButton);
             if (customButtonIndex > 0)
             {
-                ColorsPanel.Children.Insert(customButtonIndex, _customThemeColorRadioButton);
+                ColorsPanel.Children.Insert(customButtonIndex, customThemeColorRadioButton);
             }
             else
             {
-                ColorsPanel.Children.Add(_customThemeColorRadioButton);
+                ColorsPanel.Children.Add(customThemeColorRadioButton);
             }
         }
 
@@ -73,18 +73,18 @@ namespace TodoOverlayApp.Views
         /// </summary>
         private void CreateCustomOverlayColorButton(string colorHex)
         {
-            _customColorRadioButton = ColorPickerHelper.CreateOrUpdateColorButton(
-                _customColorRadioButton, colorHex, "OverlayColors", OverlayColorRadioButton_Checked);
+            customColorRadioButton = ColorPickerHelper.CreateOrUpdateColorButton(
+                customColorRadioButton, colorHex, "OverlayColors", OverlayColorRadioButton_Checked);
 
             // 添加到面板中，确保添加在自定义按钮之前
             int customButtonIndex = OverlayColorsPanel.Children.IndexOf(CustomColorButton);
             if (customButtonIndex > 0)
             {
-                OverlayColorsPanel.Children.Insert(customButtonIndex, _customColorRadioButton);
+                OverlayColorsPanel.Children.Insert(customButtonIndex, customColorRadioButton);
             }
             else
             {
-                OverlayColorsPanel.Children.Add(_customColorRadioButton);
+                OverlayColorsPanel.Children.Add(customColorRadioButton);
             }
         }
 
@@ -93,17 +93,17 @@ namespace TodoOverlayApp.Views
         /// </summary>
         private void CustomThemeColorButton_Click(object sender, RoutedEventArgs e)
         {
-            string initialColor = _customThemeColorRadioButton?.Tag as string ?? _model.ThemeColor;
+            string initialColor = customThemeColorRadioButton?.Tag as string ?? model.ThemeColor;
 
             ColorPickerHelper.ShowColorPicker(initialColor, hexColor => {
                 // 更新模型中的主题颜色
-                _model.ThemeColor = hexColor;
+                model.ThemeColor = hexColor;
 
                 // 创建或更新自定义颜色按钮
                 CreateCustomThemeColorButton(hexColor);
 
                 // 立即应用主题设置
-                _model.ApplyThemeSettings();
+                model.ApplyThemeSettings();
             });
         }
 
@@ -112,11 +112,11 @@ namespace TodoOverlayApp.Views
         /// </summary>
         private void CustomColorButton_Click(object sender, RoutedEventArgs e)
         {
-            string initialColor = _customColorRadioButton?.Tag as string ?? _model.OverlayBackground;
+            string initialColor = customColorRadioButton?.Tag as string ?? model.OverlayBackground;
 
             ColorPickerHelper.ShowColorPicker(initialColor, hexColor => {
                 // 更新模型中的悬浮窗背景颜色
-                _model.OverlayBackground = hexColor;
+                model.OverlayBackground = hexColor;
 
                 // 创建或更新自定义颜色按钮
                 CreateCustomOverlayColorButton(hexColor);
@@ -134,10 +134,10 @@ namespace TodoOverlayApp.Views
             {
                 // 更新模型中的主题类型
                 string themeType = ThemeComboBox.SelectedIndex == 0 ? "Default" : "Dark";
-                _model.ThemeType = themeType;
+                model.ThemeType = themeType;
 
                 // 立即应用主题设置
-                _model.ApplyThemeSettings();
+                model.ApplyThemeSettings();
             }
             catch (Exception ex)
             {
@@ -154,10 +154,10 @@ namespace TodoOverlayApp.Views
                 try
                 {
                     // 更新模型中的主题颜色
-                    _model.ThemeColor = colorHex;
+                    model.ThemeColor = colorHex;
 
                     // 立即应用主题设置
-                    _model.ApplyThemeSettings();
+                    model.ApplyThemeSettings();
                 }
                 catch (Exception ex)
                 {
@@ -175,7 +175,7 @@ namespace TodoOverlayApp.Views
                 try
                 {
                     // 更新模型中的悬浮窗背景颜色
-                    _model.OverlayBackground = colorHex;
+                    model.OverlayBackground = colorHex;
 
                     // 更新预览
                     UpdatePreview();
@@ -194,7 +194,7 @@ namespace TodoOverlayApp.Views
             try
             {
                 // 更新模型中的悬浮窗不透明度
-                _model.OverlayOpacity = OpacitySlider.Value;
+                model.OverlayOpacity = OpacitySlider.Value;
 
                 // 更新预览
                 UpdatePreview();
@@ -209,9 +209,9 @@ namespace TodoOverlayApp.Views
         {
             try
             {
-                Color backgroundColor = (Color)ColorConverter.ConvertFromString(_model.OverlayBackground);
+                Color backgroundColor = (Color)ColorConverter.ConvertFromString(model.OverlayBackground);
                 PreviewBorder.Background = new SolidColorBrush(backgroundColor);
-                PreviewBorder.Opacity = _model.OverlayOpacity;
+                PreviewBorder.Opacity = model.OverlayOpacity;
             }
             catch (Exception ex)
             {

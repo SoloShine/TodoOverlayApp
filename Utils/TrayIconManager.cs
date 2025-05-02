@@ -10,16 +10,16 @@ namespace TodoOverlayApp.Utils
 {
     public static class TrayIconManager
     {
-        private static NotifyIcon? _notifyIcon;
+        private static NotifyIcon? notifyIcon;
 
         /// <summary>
         /// 初始化托盘图标
         /// </summary>
         public static void Initialize()
         {
-            if (_notifyIcon != null) return;
+            if (notifyIcon != null) return;
 
-            _notifyIcon = new NotifyIcon
+            notifyIcon = new NotifyIcon
             {
                 Icon = LoadIcon("ToDoOverlayApp.ico"),
                 Text = "TodoOverlayApp",
@@ -35,8 +35,8 @@ namespace TodoOverlayApp.Utils
                         }
                 }
             };
-            _notifyIcon.Click += OpenMainWindow;
-            _notifyIcon.Init();
+            notifyIcon.Click += OpenMainWindow;
+            notifyIcon.Init();
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace TodoOverlayApp.Utils
         /// <param name="message">消息内容</param>
         public static void SendMessage(string message)
         {
-            _notifyIcon?.ShowBalloonTip("通知", message, NotifyIconInfoType.Info);
+            notifyIcon?.ShowBalloonTip("通知", message, NotifyIconInfoType.Info);
         }
 
         /// <summary>
@@ -119,11 +119,11 @@ namespace TodoOverlayApp.Utils
         /// </summary>
         public static void Cleanup()
         {
-            if (_notifyIcon != null)
+            if (notifyIcon != null)
             {
-                _notifyIcon.Visibility = Visibility.Collapsed;
-                _notifyIcon.Dispose();
-                _notifyIcon = null;
+                notifyIcon.Visibility = Visibility.Collapsed;
+                notifyIcon.Dispose();
+                notifyIcon = null;
             }
         }
     }

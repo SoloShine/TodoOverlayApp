@@ -16,7 +16,7 @@ namespace TodoOverlayApp;
 /// </summary>  
 public partial class App : Application
 {
-    private static MainWindowViewModel? _mainViewModel;
+    private static MainWindowViewModel? mainViewModel;
     /// <summary>
     /// 全局单例 ViewModel
     /// </summary>
@@ -24,8 +24,8 @@ public partial class App : Application
     {
         get
         {
-            _mainViewModel ??= Current.Resources["MainViewModel"] as MainWindowViewModel;
-            return _mainViewModel;
+            mainViewModel ??= Current.Resources["MainViewModel"] as MainWindowViewModel;
+            return mainViewModel;
         }
     }
 
@@ -47,10 +47,10 @@ public partial class App : Application
         await InitializeDatabaseAsync();
 
         // 确保资源中的ViewModel是唯一的  
-        _mainViewModel = Current.Resources["MainViewModel"] as MainWindowViewModel;
+        mainViewModel = Current.Resources["MainViewModel"] as MainWindowViewModel;
 
         // 应用保存的主题设置
-        _mainViewModel?.Model.ApplyThemeSettings();
+        mainViewModel?.Model.ApplyThemeSettings();
 
         // 初始化托盘图标
         TrayIconManager.Initialize();

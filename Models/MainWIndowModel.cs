@@ -56,15 +56,15 @@ namespace TodoOverlayApp.Models
         // <summary>
         /// 当前主题类型：Default或Dark
         /// </summary>
-        private string _themeType = "Default";
+        private string themeType = "Default";
         public string ThemeType
         {
-            get => _themeType;
+            get => themeType;
             set
             {
-                if (_themeType != value)
+                if (themeType != value)
                 {
-                    _themeType = value;
+                    themeType = value;
                     OnPropertyChanged(nameof(ThemeType));
                     SaveToFileAsync().ConfigureAwait(false);
                 }
@@ -74,15 +74,15 @@ namespace TodoOverlayApp.Models
         /// <summary>
         /// 主题颜色（十六进制颜色代码）
         /// </summary>
-        private string _themeColor = "#2196F3";
+        private string themeColor = "#2196F3";
         public string ThemeColor
         {
-            get => _themeColor;
+            get => themeColor;
             set
             {
-                if (_themeColor != value)
+                if (themeColor != value)
                 {
-                    _themeColor = value;
+                    themeColor = value;
                     OnPropertyChanged(nameof(ThemeColor));
                     SaveToFileAsync().ConfigureAwait(false);
                 }
@@ -92,15 +92,15 @@ namespace TodoOverlayApp.Models
         /// <summary>
         /// 悬浮窗背景颜色（十六进制颜色代码）
         /// </summary>
-        private string _overlayBackground = "#D3D3D3"; // LightGray 的十六进制值
+        private string overlayBackground = "#D3D3D3"; // LightGray 的十六进制值
         public string OverlayBackground
         {
-            get => _overlayBackground;
+            get => overlayBackground;
             set
             {
-                if (_overlayBackground != value)
+                if (overlayBackground != value)
                 {
-                    _overlayBackground = value;
+                    overlayBackground = value;
                     OnPropertyChanged(nameof(OverlayBackground));
                     SaveToFileAsync().ConfigureAwait(false);
                 }
@@ -110,15 +110,15 @@ namespace TodoOverlayApp.Models
         /// <summary>
         /// 悬浮窗不透明度 (0.0-1.0)
         /// </summary>
-        private double _overlayOpacity = 0.3;
+        private double overlayOpacity = 0.3;
         public double OverlayOpacity
         {
-            get => _overlayOpacity;
+            get => overlayOpacity;
             set
             {
-                if (_overlayOpacity != value)
+                if (overlayOpacity != value)
                 {
-                    _overlayOpacity = Math.Clamp(value, 0.1, 1.0); // 确保在有效范围内
+                    overlayOpacity = Math.Clamp(value, 0.1, 1.0); // 确保在有效范围内
                     OnPropertyChanged(nameof(OverlayOpacity));
                     SaveToFileAsync().ConfigureAwait(false);
                 }

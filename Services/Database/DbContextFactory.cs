@@ -10,7 +10,7 @@ namespace TodoOverlayApp.Services.Database
     /// </summary>
     public class TodoDbContextFactory : IDesignTimeDbContextFactory<TodoDbContext>
     {
-        private readonly string _connectionString;
+        private readonly string connectionString;
 
         /// <summary>
         /// 设计时工厂构造函数，用于 EF Core 工具（如迁移）
@@ -22,7 +22,7 @@ namespace TodoOverlayApp.Services.Database
                 "TodoOverlayApp");
                 
             var dbPath = Path.Combine(dataDir, "todo.db");
-            _connectionString = $"Data Source={dbPath}";
+            connectionString = $"Data Source={dbPath}";
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace TodoOverlayApp.Services.Database
         /// </summary>
         public TodoDbContextFactory(string connectionString)
         {
-            _connectionString = connectionString;
+            this.connectionString = connectionString;
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace TodoOverlayApp.Services.Database
         public TodoDbContext CreateDbContext(string[] args = null)
         {
             var optionsBuilder = new DbContextOptionsBuilder<TodoDbContext>();
-            optionsBuilder.UseSqlite(_connectionString);
+            optionsBuilder.UseSqlite(connectionString);
             return new TodoDbContext(optionsBuilder.Options);
         }
     }

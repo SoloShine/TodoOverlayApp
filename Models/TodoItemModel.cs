@@ -27,16 +27,16 @@ namespace TodoOverlayApp.Models
             IsInjected = item.IsInjected;
             TodoItemType = item.TodoItemType;
         }
-        private ObservableCollection<TodoItemModel> _subItems = [];
+        private ObservableCollection<TodoItemModel> subItems = [];
         /// <summary>
         /// 子待办项集合
         /// </summary>
         public ObservableCollection<TodoItemModel> SubItems
         {
-            get => _subItems;
+            get => subItems;
             set
             {
-                _subItems = value;
+                subItems = value;
                 OnPropertyChanged(nameof(SubItems));
             }
         }

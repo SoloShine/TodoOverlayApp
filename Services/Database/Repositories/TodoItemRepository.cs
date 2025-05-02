@@ -11,11 +11,11 @@ namespace TodoOverlayApp.Services.Database.Repositories
     /// </summary>
     public class TodoItemRepository
     {
-        private readonly TodoDbContext _dbContext;
+        private readonly TodoDbContext dbContext;
         
         public TodoItemRepository(TodoDbContext dbContext)
         {
-            _dbContext = dbContext;
+            this.dbContext = dbContext;
         }
         
         /// <summary>
@@ -23,7 +23,7 @@ namespace TodoOverlayApp.Services.Database.Repositories
         /// </summary>
         public async Task<IEnumerable<TodoItem>> GetAllAsync()
         {
-            return await _dbContext.TodoItems.ToListAsync();
+            return await dbContext.TodoItems.ToListAsync();
         }
         
         /// <summary>
@@ -31,7 +31,7 @@ namespace TodoOverlayApp.Services.Database.Repositories
         /// </summary>
         public async Task<TodoItem?> GetByIdAsync(string id)
         {
-            return await _dbContext.TodoItems
+            return await dbContext.TodoItems
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 
@@ -42,7 +42,7 @@ namespace TodoOverlayApp.Services.Database.Repositories
         /// <returns></returns>
         public async Task<IEnumerable<TodoItem>> GetByAppPathAsync(string appPath)
         {
-            return await _dbContext.TodoItems
+            return await dbContext.TodoItems
                 .Where(t => t.AppPath == appPath)
                 .ToListAsync();
         }
@@ -52,7 +52,7 @@ namespace TodoOverlayApp.Services.Database.Repositories
         /// </summary>
         public async Task<IEnumerable<TodoItem>> GetByParentIdAsync(string parentId)
         {
-            return await _dbContext.TodoItems
+            return await dbContext.TodoItems
                 .Where(t => t.ParentId == parentId)
                 .ToListAsync();
         }
@@ -62,8 +62,8 @@ namespace TodoOverlayApp.Services.Database.Repositories
         /// </summary>
         public async Task<int> AddAsync(TodoItem todoItem)
         {
-            _dbContext.TodoItems.Add(todoItem);
-            return await _dbContext.SaveChangesAsync();
+            dbContext.TodoItems.Add(todoItem);
+            return await dbContext.SaveChangesAsync();
         }
         
         /// <summary>
@@ -71,13 +71,13 @@ namespace TodoOverlayApp.Services.Database.Repositories
         /// </summary>
         public async Task<int> UpdateAsync(TodoItem todoItem)
         {
-            var existingEntity = await _dbContext.TodoItems.FindAsync(todoItem.Id);
+            var existingEntity = await dbContext.TodoItems.FindAsync(todoItem.Id);
             if (existingEntity == null) return 0;
 
             // 更新所有属性
-            _dbContext.Entry(existingEntity).CurrentValues.SetValues(todoItem);
+            dbContext.Entry(existingEntity).CurrentValues.SetValues(todoItem);
 
-            return await _dbContext.SaveChangesAsync();
+            return await dbContext.SaveChangesAsync();
         }
         
         /// <summary>
@@ -85,11 +85,11 @@ namespace TodoOverlayApp.Services.Database.Repositories
         /// </summary>
         public async Task<int> DeleteAsync(string id)
         {
-            var todoItem = await _dbContext.TodoItems.FindAsync(id);
+            var todoItem = await dbContext.TodoItems.FindAsync(id);
             if (todoItem != null)
             {
-                _dbContext.TodoItems.Remove(todoItem);
-                return await _dbContext.SaveChangesAsync();
+                dbContext.TodoItems.Remove(todoItem);
+                return await dbContext.SaveChangesAsync();
             }
             return 0;
         }
@@ -99,11 +99,11 @@ namespace TodoOverlayApp.Services.Database.Repositories
         /// </summary>
         public async Task<int> UpdateCompletionStatusAsync(string id, bool isCompleted)
         {
-            var todoItem = await _dbContext.TodoItems.FindAsync(id);
+            var todoItem = await dbContext.TodoItems.FindAsync(id);
             if (todoItem != null)
             {
                 todoItem.IsCompleted = isCompleted;
-                return await _dbContext.SaveChangesAsync();
+                return await dbContext.SaveChangesAsync();
             }
             return 0;
         }

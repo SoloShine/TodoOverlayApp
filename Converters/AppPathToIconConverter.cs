@@ -91,16 +91,13 @@ namespace TodoOverlayApp.Converters
         /// <summary>
         /// 单例实例，方便在代码中使用
         /// </summary>
-        private static AppPathToIconConverter _instance;
+        private static AppPathToIconConverter instance;
         public static AppPathToIconConverter Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = new AppPathToIconConverter();
-                }
-                return _instance;
+                instance ??= new AppPathToIconConverter();
+                return instance;
             }
         }
     }

@@ -12,11 +12,11 @@ namespace TodoOverlayApp.Services.Database
     /// </summary>
     public class DatabaseInitializer
     {
-        private readonly TodoDbContext _dbContext;
+        private readonly TodoDbContext dbContext;
         
         public DatabaseInitializer(TodoDbContext dbContext)
         {
-            _dbContext = dbContext;
+            this.dbContext = dbContext;
         }
         
         /// <summary>
@@ -25,10 +25,10 @@ namespace TodoOverlayApp.Services.Database
         public async Task InitializeAsync()
         {
             // 确保数据库已创建
-            await _dbContext.Database.EnsureCreatedAsync();
+            await dbContext.Database.EnsureCreatedAsync();
             
             // 检查是否需要填充初始数据
-            if (!await _dbContext.TodoItems.AnyAsync())
+            if (!await dbContext.TodoItems.AnyAsync())
             {
                 await SeedTestDataAsync();
             }
@@ -60,13 +60,13 @@ namespace TodoOverlayApp.Services.Database
         private async Task ClearAllDataAsync()
         {
             // 删除所有待办事项
-            var allItems = await _dbContext.TodoItems.ToListAsync();
-            _dbContext.TodoItems.RemoveRange(allItems);
+            var allItems = await dbContext.TodoItems.ToListAsync();
+            dbContext.TodoItems.RemoveRange(allItems);
 
             // 如果后续添加了其他表，也在这里清除
 
             // 保存更改
-            await _dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -140,10 +140,10 @@ namespace TodoOverlayApp.Services.Database
                 Description = "记事本应用待办事项示例1"
             };
             
-            _dbContext.TodoItems.AddRange(todoItem1, todoItem1_1, todoItem1_2, todoItem2, todoItem3, todoItem3_1);
+            dbContext.TodoItems.AddRange(todoItem1, todoItem1_1, todoItem1_2, todoItem2, todoItem3, todoItem3_1);
             
             // 保存所有更改
-            await _dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
     }
 }

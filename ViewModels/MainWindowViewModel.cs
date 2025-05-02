@@ -29,7 +29,7 @@ namespace TodoOverlayApp.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private readonly Dictionary<string, OverlayWindow> _overlayWindows = [];
+        private readonly Dictionary<string, OverlayWindow> overlayWindows = [];
 
 
         private MainWindowModel model;
@@ -300,10 +300,10 @@ namespace TodoOverlayApp.ViewModels
                 if (processes.Length == 0)
                 {
                     // 如果进程未运行且之前已经创建了 overlay，则关闭它
-                    if (_overlayWindows.TryGetValue(item.AppPath, out OverlayWindow? value))
+                    if (overlayWindows.TryGetValue(item.AppPath, out OverlayWindow? value))
                     {
                         value.Close();
-                        _overlayWindows.Remove(item.AppPath);
+                        overlayWindows.Remove(item.AppPath);
                     }
                     continue;
                 }
@@ -378,7 +378,7 @@ namespace TodoOverlayApp.ViewModels
             // 若目标窗口为前台且尚未创建 overlay，则创建 overlay
             if (foregroundHandle == targetWindowHandle && item.IsInjected)
             {
-                if (!_overlayWindows.ContainsKey(appKey))
+                if (!overlayWindows.ContainsKey(appKey))
                 {
                     Debug.WriteLine("窗口需要创建");
                     var app = TodoItemModel.RecTodoItems(Model.TodoItems, appKey);
@@ -416,7 +416,7 @@ namespace TodoOverlayApp.ViewModels
                     timer.Start();
                     overlayWindow.Closed += (s, args) => timer.Stop();
 
-                    _overlayWindows[appKey] = overlayWindow;
+                    overlayWindows[appKey] = overlayWindow;
                 }
             }
             else
@@ -424,11 +424,11 @@ namespace TodoOverlayApp.ViewModels
                 // 如果目标最小化或关闭，则关闭 overlay，避免冗余窗口
                 if (Utils.NativeMethods.IsIconic(targetWindowHandle) || !Utils.NativeMethods.IsWindowVisible(targetWindowHandle) || !item.IsInjected)
                 {
-                    if (_overlayWindows.TryGetValue(appKey, out OverlayWindow? value))
+                    if (overlayWindows.TryGetValue(appKey, out OverlayWindow? value))
                     {
                         Debug.WriteLine("窗口需要删除");
                         value.Close();
-                        _overlayWindows.Remove(appKey);
+                        overlayWindows.Remove(appKey);
                     }
                 }
             }
@@ -678,12 +678,12 @@ namespace TodoOverlayApp.ViewModels
         /// </summary>
         public void Cleanup()
         {
-            foreach (var window in _overlayWindows.Values)
+            foreach (var window in overlayWindows.Values)
             {
                 window.Close();
             }
             Model.SaveToFileAsync().ConfigureAwait(false);
-            _overlayWindows.Clear();
+            overlayWindows.Clear();
             autoInjectTimer.Stop();
         }
     }
