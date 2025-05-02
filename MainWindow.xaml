@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     xmlns:views="clr-namespace:TodoOverlayApp.Views"
     xmlns:vm="clr-namespace:TodoOverlayApp.ViewModels"
     Title="待办软件配置"
@@ -11,68 +12,123 @@
     Height="450"
     Background="{DynamicResource RegionBrush}"
     WindowStartupLocation="CenterScreen">
+    <hc:Window.Resources>
+        <Style
+            x:Key="menuButton"
+            BasedOn="{StaticResource ButtonBaseStyle}"
+            TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+            <Setter Property="MinHeight" Value="40" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+    </hc:Window.Resources>
+    <!--  主内容区域  -->
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <!--  添加菜单栏  -->
-        <Menu Grid.Row="0">
-            <MenuItem Header="文件">
-                <MenuItem Command="{Binding AddSubTodoItemCommand}" Header="添加软件" />
-                <Separator />
-                <MenuItem Click="ExitMenuItem_Click" Header="退出" />
-            </MenuItem>
-            <MenuItem Header="设置">
-                <MenuItem Click="ThemeMenuItem_Click" Header="主题配置" />
-                <MenuItem Command="{Binding ResetAppConfigCommand}" Header="重置配置" />
-                <MenuItem Command="{Binding ResetTodoCommand}" Header="重置数据" />
-            </MenuItem>
-            <MenuItem Header="帮助">
-                <MenuItem Click="AboutMenuItem_Click" Header="关于" />
-            </MenuItem>
-        </Menu>
-
-        <!--  主内容区域  -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="150" />
-            </Grid.ColumnDefinitions>
-            <!--  使用新的UserControl替换之前的TreeView  -->
-            <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="软件关联视图" />
-                <views:TodoTreeView DockPanel.Dock="Bottom" HorizontalAlignment="Stretch"/>
-            </DockPanel>
-            <Grid Grid.Column="1">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="50" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="150" />
+        </Grid.ColumnDefinitions>
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+            <!--  菜单  -->
+            <Grid>
                 <Grid.RowDefinitions>
-                    <!--  功能区  -->
-                    <RowDefinition />
-                    <!--  小组件区  -->
-                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <StackPanel>
-                    <StackPanel HorizontalAlignment="Left">
-                        <RadioButton
-                            Margin="5"
-                            HorizontalAlignment="Left"
-                            Content="待办视图"
-                            GroupName="ViewMode" />
-                        <RadioButton
-                            Margin="5"
-                            HorizontalAlignment="Left"
-                            Content="自定义分组视图(todo)"
-                            GroupName="ViewMode" />
-                    </StackPanel>
+                    <hc:SideMenu>
+                        <!--<hc:SideMenuItem Command="{Binding AddSubTodoItemCommand}" ToolTip="新建待办项">
+                            <hc:SideMenuItem.Icon>
+                                <iconPacks:PackIconMaterialDesign Kind="AddAlert" />
+                            </hc:SideMenuItem.Icon>
+                        </hc:SideMenuItem>-->
+                        <hc:SideMenuItem ToolTip="常规视图">
+                            <hc:SideMenuItem.Icon>
+                                <iconPacks:PackIconFontAwesome Kind="FaceSmileRegular" />
+                            </hc:SideMenuItem.Icon>
+                        </hc:SideMenuItem>
+                        <hc:SideMenuItem ToolTip="日历视图（todo）">
+                            <hc:SideMenuItem.Icon>
+                                <iconPacks:PackIconCircumIcons Kind="Calendar" />
+                            </hc:SideMenuItem.Icon>
+                        </hc:SideMenuItem>
+                    </hc:SideMenu>
                 </StackPanel>
                 <StackPanel Grid.Row="1" VerticalAlignment="Bottom">
-                    <Viewbox MaxWidth="200">
-                        <hc:FlipClock Margin="32" />
-                    </Viewbox>
+                    <hc:ContextMenuButton Style="{StaticResource menuButton}" ToolTip="设置">
+                        <hc:ContextMenuButton.Content>
+                            <iconPacks:PackIconVaadinIcons Kind="Cog" />
+                        </hc:ContextMenuButton.Content>
+                        <hc:ContextMenuButton.Menu>
+                            <ContextMenu>
+                                <MenuItem Command="{Binding ThemeSettingsCommand}" Header="主题设置">
+                                    <MenuItem.Icon>
+                                        <iconPacks:PackIconLucide Kind="Palette" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Command="{Binding ResetAppConfigCommand}" Header="重置配置">
+                                    <MenuItem.Icon>
+                                        <iconPacks:PackIconIonicons Kind="RefreshMD" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Command="{Binding ResetTodoCommand}" Header="重置数据">
+                                    <MenuItem.Icon>
+                                        <iconPacks:PackIconBoxIcons Kind="RegularReset" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </hc:ContextMenuButton.Menu>
+                    </hc:ContextMenuButton>
+                    <Button
+                        Command="{Binding AboutCommand}"
+                        Style="{StaticResource menuButton}"
+                        ToolTip="帮助">
+                        <Button.Content>
+                            <iconPacks:PackIconLucide Kind="CircleHelp" />
+                        </Button.Content>
+                    </Button>
                 </StackPanel>
+
             </Grid>
 
+
+        </Border>
+        <DockPanel Grid.Column="1">
+            <Grid Margin="5" DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    Margin="5,0"
+                    VerticalAlignment="Center"
+                    Text="待办事项" />
+                <hc:TextBox
+                    x:Name="TodoInputTextBox"
+                    Grid.Column="1"
+                    hc:InfoElement.Placeholder="＋请输入待办内容"
+                    Background="{StaticResource TextIconBrush}"
+                    KeyDown="TodoInputTextBox_KeyDown" />
+
+            </Grid>
+            <views:TodoTreeView HorizontalAlignment="Stretch" DockPanel.Dock="Bottom" />
+        </DockPanel>
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <!--  功能区  -->
+                <RowDefinition />
+                <!--  小组件区  -->
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="1" VerticalAlignment="Bottom">
+                <Viewbox MaxWidth="200">
+                    <hc:FlipClock Margin="32" />
+                </Viewbox>
+            </StackPanel>
         </Grid>
+
     </Grid>
 </hc:Window>

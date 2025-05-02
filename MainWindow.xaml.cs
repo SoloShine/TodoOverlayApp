@@ -1,5 +1,6 @@
 ﻿
 using System.Windows;
+using TodoOverlayApp.Models;
 using TodoOverlayApp.Utils;
 using TodoOverlayApp.ViewModels;
 using TodoOverlayApp.Views;
@@ -48,27 +49,36 @@ namespace TodoOverlayApp
             }
         }
 
-        private void ThemeMenuItem_Click(object sender, RoutedEventArgs e)
+        private void TodoInputTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            var themeWindow = new ThemeSettingsWindow
+            if (e.Key == System.Windows.Input.Key.Enter)
             {
-                Owner = this
-            };
-            themeWindow.ShowDialog();
+                // 获取文本内容
+                string todoContent = TodoInputTextBox.Text.Trim();
+                if (!string.IsNullOrEmpty(todoContent))
+                {
+                    // 创建新的TodoItemModel
+                    var newTodo = new TodoItemModel
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Content = todoContent,
+                        IsCompleted = false
+                    };
+
+                    // 将新待办添加到ViewModel的TodoItems集合中
+                    if (DataContext is MainWindowViewModel viewModel)
+                    {
+                        viewModel.Model.TodoItems.Add(newTodo);
+                        //调用编辑
+                        App.MainViewModel?.EditTodoItemCommand.Execute(newTodo);
+                        // 保存到数据库
+                        App.TodoItemRepository.AddAsync(newTodo).ConfigureAwait(false);
+                        // 清空文本框
+                        TodoInputTextBox.Clear();
+                    }
+                }
+            }
         }
 
-        private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            var aboutWindow = new AboutWindow
-            {
-                Owner = this
-            };
-            aboutWindow.ShowDialog();
-        }
-
-        private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
     }
 }
