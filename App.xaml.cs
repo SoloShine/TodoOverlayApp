@@ -35,7 +35,7 @@ public partial class App : Application
     // 仓储实例
     //public static GroupRepository GroupRepository { get; private set; }
     public static TodoItemRepository TodoItemRepository { get; private set; }
-    //public static AppAssociationRepository AppAssociationRepository { get; private set; }
+    public static AutoTaskRepository AutoTaskRepository { get; private set; }
     public static DatabaseInitializer DatabaseInitializer { get; private set; }
 
 
@@ -82,6 +82,7 @@ public partial class App : Application
         // 初始化仓储
         //GroupRepository = new GroupRepository(DbContext);
         TodoItemRepository = new TodoItemRepository(DbContext);
+        AutoTaskRepository = new AutoTaskRepository(DbContext);
         //AppAssociationRepository = new AppAssociationRepository(DbContext);
 
         // 初始化数据库

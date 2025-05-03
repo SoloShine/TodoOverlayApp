@@ -17,6 +17,8 @@ namespace TodoOverlayApp.Services.Database
         /// </summary>
         public DbSet<TodoItem> TodoItems { get; set; }
 
+        public DbSet<AutoTask> AutoTasks { get; set; }
+
         /// <summary>
         /// 配置实体关系和约束
         /// </summary>
@@ -27,6 +29,13 @@ namespace TodoOverlayApp.Services.Database
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Content).IsRequired();
+            });
+
+            // 配置 AutoTask 实体
+            modelBuilder.Entity<AutoTask>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                //其他todo
             });
 
             base.OnModelCreating(modelBuilder);
