@@ -19,8 +19,8 @@
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0">
 
-            <StackPanel Margin="0,0,0,10" DockPanel.Dock="Top">
-                <TextBlock Margin="0,0,0,5" Text="待办类型:" />
+            <StackPanel Margin="0,0,0,5" DockPanel.Dock="Top">
+                <TextBlock Text="待办类型:" />
                 <ComboBox
                     x:Name="AppTypeComboBox"
                     Margin="0,5,0,0"
@@ -30,23 +30,14 @@
             </StackPanel>
 
             <!--  应用名称  -->
-            <StackPanel
-                Grid.Row="1"
-                Margin="0,10,0,10"
-                DockPanel.Dock="Top">
-                <TextBlock
-                    x:Name="AppNameTextBlock"
-                    Margin="0,0,0,5"
-                    Text="名称:" />
+            <StackPanel Margin="0,10,0,5" DockPanel.Dock="Top">
+                <TextBlock x:Name="AppNameTextBlock" Text="名称:" />
                 <TextBox x:Name="AppNameTextBox" Padding="5" />
             </StackPanel>
 
             <!--  应用路径  -->
-            <StackPanel Margin="0,10,0,10" DockPanel.Dock="Top">
-                <TextBlock
-                    x:Name="AppPathTextBlock"
-                    Margin="0,0,0,5"
-                    Text="应用路径:" />
+            <StackPanel Margin="0,10,0,5" DockPanel.Dock="Top">
+                <TextBlock x:Name="AppPathTextBlock" Text="应用路径:" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="25*" />
@@ -72,6 +63,24 @@
             <StackPanel Margin="0,0,0,10" DockPanel.Dock="Top">
                 <TextBlock Margin="0,0,0,5" Text="内容:" />
                 <TextBox x:Name="ContentTextBox" Padding="5" />
+            </StackPanel>
+
+            <!--  开始时间 编辑  -->
+            <StackPanel Margin="0,0,0,5" DockPanel.Dock="Top">
+                <TextBlock Margin="0,0,0,5" Text="计划开始时间:" />
+                <hc:DateTimePicker x:Name="StartTimePicker" />
+            </StackPanel>
+
+            <!--  结束时间 编辑  -->
+            <StackPanel Margin="0,0,0,5" DockPanel.Dock="Top">
+                <TextBlock Margin="0,0,0,5" Text="计划结束时间:" />
+                <hc:DateTimePicker x:Name="EndTimePicker" />
+            </StackPanel>
+
+            <!--  提醒时间 编辑  -->
+            <StackPanel Margin="0,0,0,5" DockPanel.Dock="Top">
+                <TextBlock Margin="0,0,0,5" Text="计划提醒时间:" />
+                <hc:DateTimePicker x:Name="ReminderTimePicker" />
             </StackPanel>
 
             <!--  Description 编辑  -->

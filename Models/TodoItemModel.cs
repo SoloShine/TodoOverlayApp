@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
+using Quartz;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,6 +27,13 @@ namespace TodoOverlayApp.Models
             AppPath = item.AppPath;
             IsInjected = item.IsInjected;
             TodoItemType = item.TodoItemType;
+            GreadtedAt = item.GreadtedAt;
+            UpdatedAt = item.UpdatedAt;
+            CompletedAt = item.CompletedAt;
+            StartTime = item.StartTime;
+            ReminderTime = item.ReminderTime;
+            EndTime = item.EndTime;
+            //todo更新任务
         }
         private ObservableCollection<TodoItemModel> subItems = [];
         /// <summary>
@@ -40,6 +48,7 @@ namespace TodoOverlayApp.Models
                 OnPropertyChanged(nameof(SubItems));
             }
         }
+
 
         /// <summary>
         /// 选择一个应用，并将其路径设置为选中应用的AppPath。

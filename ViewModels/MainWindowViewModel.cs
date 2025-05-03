@@ -15,6 +15,7 @@ using System.Windows.Threading;
 using HandyControl.Tools;
 using Microsoft.Win32;
 using TodoOverlayApp.Models;
+using TodoOverlayApp.Services.Scheduler;
 using TodoOverlayApp.Views;
 using MessageBox = HandyControl.Controls.MessageBox;
 
@@ -30,7 +31,7 @@ namespace TodoOverlayApp.ViewModels
         }
 
         private readonly Dictionary<string, OverlayWindow> overlayWindows = [];
-
+        private readonly TodoItemSchedulerService _schedulerService;
 
         private MainWindowModel model;
         /// <summary>
@@ -53,6 +54,7 @@ namespace TodoOverlayApp.ViewModels
         public ICommand ResetAppConfigCommand { get; }
         public ICommand ResetTodoCommand { get; }
         public ICommand EditTodoItemCommand { get; }
+        public ICommand ToggleIsCompletedCommand { get; }
         public ICommand ThemeSettingsCommand { get; }
         public ICommand AboutCommand { get; }
 
@@ -69,7 +71,7 @@ namespace TodoOverlayApp.ViewModels
                 model = new MainWindowModel();
             }
 
-            //从数据库加载待办事项todo
+            //从数据库加载待办事项
             model.TodoItems = MainWindowModel.LoadFromDatabase();
 
             ForceLaunchCommand = new RelayCommand(ForceLaunch);
@@ -79,6 +81,7 @@ namespace TodoOverlayApp.ViewModels
             ResetAppConfigCommand = new RelayCommand(ResetAppConfig);
             ResetTodoCommand = new RelayCommand(ResetTodo);
             EditTodoItemCommand = new RelayCommand(EditTodoItem);
+            ToggleIsCompletedCommand = new RelayCommand(ToggleIsCompleted);
             ThemeSettingsCommand = new RelayCommand(ThemeSettings);
             AboutCommand = new RelayCommand(About);
             //尝试自动注入OverlayWindow
@@ -88,6 +91,10 @@ namespace TodoOverlayApp.ViewModels
             };
             autoInjectTimer.Tick += AutoInjectOverlays;
             autoInjectTimer.Start();
+
+            // 初始化定时任务服务
+            //_schedulerService = new TodoItemSchedulerService();
+            //SetupTodoItemsScheduling();
         }
 
         /// <summary>
@@ -170,32 +177,45 @@ namespace TodoOverlayApp.ViewModels
             if (editWindow.ShowDialog() == true)
             {
                 // 更新原始对象
-                todo.Content = editWindow.Todo.Content;
-                todo.Description = editWindow.Todo.Description;
-                todo.AppPath = editWindow.Todo.AppPath;
-                todo.Name = editWindow.Todo.Name;
-                //todo.IsCompleted = editWindow.Todo.IsCompleted;
-                //todo.IsExpanded = editWindow.Todo.IsExpanded;
-                //todo.IsInjected = editWindow.Todo.IsInjected;
-                todo.TodoItemType = editWindow.Todo.TodoItemType;
-                todo.UpdatedAt = DateTime.Now;
-                App.TodoItemRepository.UpdateAsync(todo).ConfigureAwait(false);
+                EditTodoItemoModel(todo, editWindow.Todo);
             }
         }
 
         /// <summary>
-        /// 切换待办项的完成状态。
+        /// 编辑待办项模型，更新数据库并重新调度定时任务（如果有的话）
+        /// </summary>
+        /// <param name="todo"></param>
+        private void EditTodoItemoModel(TodoItemModel? todo, TodoItemModel? editTodo)
+        {
+            if (todo == null || editTodo ==null  ) return;
+            todo.Content = editTodo.Content;
+            todo.Description = editTodo.Description;
+            todo.AppPath = editTodo.AppPath;
+            todo.Name = editTodo.Name;
+            //todo.IsCompleted = editTodo.IsCompleted;
+            //todo.IsExpanded = editTodo.IsExpanded;
+            //todo.IsInjected = editTodo.IsInjected;
+            todo.TodoItemType = editTodo.TodoItemType;
+            todo.UpdatedAt = DateTime.Now;
+            App.TodoItemRepository.UpdateAsync(todo).ConfigureAwait(false);
+
+            // todo更新定时任务
+            
+        }
+
+        /// <summary>
+        /// 切换IsCompleted，edit中没有处理，这里单独更新数据库
         /// </summary>
         /// <param name="parameter"></param>
         private void ToggleIsCompleted(object? parameter)
         {
-            if (parameter is TodoItemModel item)
+            if (parameter is TodoItemModel item && item != null)
             {
                 App.TodoItemRepository.UpdateAsync(item).ConfigureAwait(false);
             }
         }
 
-        
+
         /// <summary>
         /// 为待办项添加子待办项
         /// </summary>
@@ -253,7 +273,7 @@ namespace TodoOverlayApp.ViewModels
         /// <param name="items"></param>
         /// <param name="itemId"></param>
         /// <returns></returns>
-        private static bool FindAndRemoveItemById(ObservableCollection<TodoItemModel> items, string itemId)
+        private bool FindAndRemoveItemById(ObservableCollection<TodoItemModel> items, string itemId)
         {
             // 先检查当前级别
             var directMatch = items.FirstOrDefault(t => t.Id == itemId);
@@ -262,6 +282,8 @@ namespace TodoOverlayApp.ViewModels
                 items.Remove(directMatch);
                 //调用数据库删除操作
                 App.TodoItemRepository.DeleteAsync(itemId).ConfigureAwait(false);
+                // 取消定时任务
+                _schedulerService.UnscheduleTodoItemReminder(itemId).ConfigureAwait(false);
                 return true;
             }
 
@@ -674,6 +696,35 @@ namespace TodoOverlayApp.ViewModels
 
 
         /// <summary>
+        /// 设置TodoItems的定时任务
+        /// </summary>
+        private void SetupTodoItemsScheduling()
+        {
+            //Model.TodoItems.CollectionChanged += async (sender, e) =>
+            //{
+            //    if (e.NewItems != null)
+            //    {
+            //        foreach (TodoItemModel item in e.NewItems)
+            //        {
+            //            if (!string.IsNullOrWhiteSpace(item.Cron))
+            //            {
+            //                await _schedulerService.ScheduleTodoItemReminder(item);
+            //            }
+            //        }
+            //    }
+            //};
+
+            //// 为现有项设置定时任务
+            //foreach (var item in Model.TodoItems)
+            //{
+            //    if (!string.IsNullOrWhiteSpace(item.Cron))
+            //    {
+            //        _schedulerService.ScheduleTodoItemReminder(item).ConfigureAwait(false);
+            //    }
+            //}
+        }
+
+        /// <summary>
         /// 清理所有关联的悬浮窗和定时器
         /// </summary>
         public void Cleanup()
@@ -685,6 +736,7 @@ namespace TodoOverlayApp.ViewModels
             Model.SaveToFileAsync().ConfigureAwait(false);
             overlayWindows.Clear();
             autoInjectTimer.Stop();
+            _schedulerService.ShutdownAsync().ConfigureAwait(false);
         }
     }
 }

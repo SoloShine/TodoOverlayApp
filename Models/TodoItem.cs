@@ -48,7 +48,8 @@ namespace TodoOverlayApp.Models
             get => description;
             set
             {
-                if (description != value) { 
+                if (description != value)
+                {
                     description = value;
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(Description));
@@ -59,10 +60,10 @@ namespace TodoOverlayApp.Models
         /// <summary>
         /// 父节点id
         /// </summary>
-        public string? ParentId 
-        { 
-            get => parentId; 
-            set 
+        public string? ParentId
+        {
+            get => parentId;
+            set
             {
                 if (parentId != value)
                 {
@@ -70,7 +71,7 @@ namespace TodoOverlayApp.Models
                     UpdatedAt = DateTime.Now;
                     OnPropertyChanged(nameof(ParentId));
                 }
-            } 
+            }
         }
 
         private string content = "";
@@ -91,7 +92,7 @@ namespace TodoOverlayApp.Models
             }
         }
 
-        private bool isCompleted;
+        private bool isCompleted = false;
         /// <summary>
         /// 是否完成
         /// </summary>
@@ -104,6 +105,14 @@ namespace TodoOverlayApp.Models
                 {
                     isCompleted = value;
                     UpdatedAt = DateTime.Now;
+                    if (isCompleted)
+                    {
+                        CompletedAt = DateTime.Now;
+                    }
+                    else
+                    {
+                        CompletedAt = null;
+                    }
                     OnPropertyChanged(nameof(IsCompleted));
                 }
             }
@@ -199,6 +208,8 @@ namespace TodoOverlayApp.Models
         }
 
         private DateTime? updatedAt = DateTime.Now;
+
+
         /// <summary>
         /// 更新时间
         /// </summary>
@@ -215,6 +226,63 @@ namespace TodoOverlayApp.Models
             }
         }
 
+        public DateTime? completedAt { get; set; } = null;
+        /// <summary>
+        /// 完成时间
+        /// </summary>
+        public DateTime? CompletedAt
+        {
+            get => completedAt;
+            set
+            {
+                if (completedAt != value)
+                {
+                    completedAt = value;
+                    OnPropertyChanged(nameof(CompletedAt));
+                }
+            }
+        }
+
+        private DateTime? startTime = null;
+        /// <summary>
+        /// 开始时间
+        /// </summary>
+        public DateTime? StartTime 
+        { 
+            get => startTime; 
+            set 
+            { 
+                startTime = value; 
+                OnPropertyChanged(nameof(StartTime)); 
+            } 
+        }
+
+        private DateTime? reminderTime = null;
+        /// <summary>
+        /// 提醒时间
+        /// </summary>
+        public DateTime? ReminderTime 
+        { 
+            get => reminderTime; 
+            set 
+            { 
+                reminderTime = value; 
+                OnPropertyChanged(nameof(ReminderTime)); 
+            } 
+        }
+        private DateTime? endTime = null;
+        /// <summary>
+        /// 结束时间
+        /// </summary>
+        public DateTime? EndTime 
+        { 
+            get => endTime; 
+            set 
+            { 
+                endTime = value; 
+                OnPropertyChanged(nameof(EndTime)); 
+            } 
+        }
     }
 
     public enum TodoItemType

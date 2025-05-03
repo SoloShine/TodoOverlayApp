@@ -22,7 +22,14 @@ namespace TodoOverlayApp.Views
                 ParentId = todo.ParentId,
                 IsExpanded = todo.IsExpanded,
                 SubItems = todo.SubItems,
-                TodoItemType = todo.TodoItemType
+                TodoItemType = todo.TodoItemType,
+                AppPath = todo.AppPath,
+                Name = todo.Name,
+                IsInjected = todo.IsInjected,
+                StartTime = todo.StartTime,
+                ReminderTime = todo.ReminderTime,
+                EndTime = todo.EndTime,
+
             };
 
             // 初始化控件值
@@ -31,6 +38,9 @@ namespace TodoOverlayApp.Views
             AppPathTextBox.Text = todo.AppPath;
             AppNameTextBox.Text = todo.Name;
             AppTypeComboBox.SelectedItem = todo.TodoItemType;
+            StartTimePicker.SelectedDateTime = todo.StartTime;
+            EndTimePicker.SelectedDateTime = todo.EndTime;
+            ReminderTimePicker.SelectedDateTime = todo.ReminderTime;
 
             // 初始化枚举ComboBox
             var converter = new Converters.EnumToComboBoxConverter();
@@ -124,6 +134,11 @@ namespace TodoOverlayApp.Views
             Todo.Description = DescriptionTextBox.Text;
             Todo.AppPath = AppPathTextBox.Text;
             Todo.Name = AppNameTextBox.Text;
+            Todo.StartTime = StartTimePicker.SelectedDateTime;
+            Todo.EndTime = EndTimePicker.SelectedDateTime;
+            Todo.ReminderTime = ReminderTimePicker.SelectedDateTime;
+
+
             DialogResult = true;
             Close();
         }
